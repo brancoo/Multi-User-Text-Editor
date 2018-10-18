@@ -1,27 +1,21 @@
 CC		:= gcc
 C_FLAGS := -Wall -Wextra
-LDFLAGS := -pthread -lncurses
 
-BIN		:= bin
+OUT		:= out
 SRC		:= src
 INCLUDE	:= include
-LIB		:= lib
 
-LIBRARIES	:=
+LIBRARIES	:= -lncurses
 
-ifeq ($(OS),Windows_NT)
-EXECUTABLE	:= main.exe
-else
-EXECUTABLE	:= main
-endif
+EXECUTABLE	:= server
 
-all: $(BIN)/$(EXECUTABLE)
+all: $(OUT)/$(EXECUTABLE)
 
 clean:
-	-$(RM) $(BIN)/$(EXECUTABLE)
+	-$(RM) $(OUT)/$(EXECUTABLE)
 
 run: all
-	./$(BIN)/$(EXECUTABLE)
+	./$(OUT)/$(EXECUTABLE)
 
-$(BIN)/$(EXECUTABLE): $(SRC)/*
-	$(CC) $(C_FLAGS) -I$(INCLUDE) -L$(LIB) $^ -o $@ $(LIBRARIES)
+$(OUT)/$(EXECUTABLE): $(SRC)/*.c
+	$(CC) $(C_FLAGS) -I$(INCLUDE) $^ -o $@ $(LIBRARIES)
