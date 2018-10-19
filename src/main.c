@@ -1,4 +1,4 @@
-#include "estruturas.h"
+#include "../include/estruturas.h"
 #include <curses.h>
 #include <ncurses.h>
 #include <stdio.h>
@@ -12,7 +12,8 @@
 Editor editor;
 
 void load_file(char *filename) {
-  FILE *file = fopen(filename, "r");
+  FILE *file = fopen(filename, "rt");
+  char c;
 
   if (file == NULL) {
     printf("Erro ao carregar ficheiro : %s\n", filename);
@@ -21,7 +22,8 @@ void load_file(char *filename) {
 
   for (int x = 0; x < MAX_LINES; x++) {
     for (int y = 0; y < MAX_COLUMNS; y++) {
-      fscanf(file, " %c", &editor.content[x][y]);
+      fscanf(file, "%c", &editor.content[x][y]); //nao assume espacos
+      //printf("%c\n", editor.content[x][y]);
     }
   }
 
@@ -48,20 +50,28 @@ WINDOW *create_win(int height, int width, int starty, int startx) {
 }
 
 void place_in_editor(WINDOW *win, int x, int y, char c) {
-  x++;
-  y++;
-  mvwprintw(win, x, y, "%c", c);
+x++;
+y++;
+mvwprintw(win, x, y, "%c", c);
+  
 }
 
 void print_content(WINDOW *win, char content[MAX_LINES][MAX_COLUMNS]) {
-  for (int i = 0; i <= MAX_LINES; i++) {
-    for (int j = 0; j <= MAX_COLUMNS; j++) {
+  for (int i = 0; i < MAX_LINES; i++) {
+    for (int j = 0; j < MAX_COLUMNS; j++) {
       if (content[i][j] != NULL) {
         place_in_editor(win, i, j, content[i][j]);
         editor.num_chars++;
       }
     }
   }
+}
+
+void edit_editor(WINDOW *win, char content[MAX_LINES][MAX_COLUMNS], char c, int x, int y){
+  x--;
+  y--;
+  content[x][y]=c;
+  place_in_editor(win, y, x, c);
 }
 
 int main(int argc, char **argv) {
@@ -77,7 +87,7 @@ int main(int argc, char **argv) {
 
   initscr();
   cbreak();
-  keypad(stdscr, TRUE);
+  keypad(stdscr, TRUE); //para ativar a leitura das setas
   noecho();
 
   printw("Press q to exit");
@@ -96,7 +106,7 @@ int main(int argc, char **argv) {
   wrefresh(info);
 
   // Start with cursor in 1 1
-  wmove(my_win, 1, 1);
+  wmove(my_win, 1, 1);  //meter cursor no inicio da 1 janela
   wrefresh(my_win);
 
   while ((ch = getch()) != 'q') {
@@ -121,9 +131,20 @@ int main(int argc, char **argv) {
         y++;
       }
       break;
+    default :
+    edit_editor(my_win, editor.content, ch, x, y);
+    if(x==45){
+      x=1;
+      y++;
     }
+    else
+    x++;
+    }
+
     wmove(my_win, y, x);
     wrefresh(my_win);
+
+
   }
 
   endwin();
