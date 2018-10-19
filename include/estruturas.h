@@ -1,8 +1,8 @@
-#define MEDIT_MAXUSERS 3 // Nº de utilizadores máximo ao mesmo tempo
+#include <stdbool.h>
+
 #define MAX_LINES 15
 #define MAX_COLUMNS 45
-
-
+#define PIPE "main_pipe"
 
 typedef struct {
   int x, y;
@@ -14,6 +14,14 @@ typedef struct {
   char *filename;
   char content[MAX_LINES][MAX_COLUMNS];
   int screenrows;
-  int size;
   int num_chars;
+  int timeout;
+  int max_users;
 } Editor;
+
+typedef struct{
+  char username[8];
+  int pid;
+  bool status; //modo navegação ou edição
+  int line_editing;
+}client;
