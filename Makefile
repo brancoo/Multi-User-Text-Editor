@@ -1,21 +1,11 @@
-CC		:= gcc
-C_FLAGS := -Wall -Wextra
+SUBDIRS = server client
 
-OUT		:= out
-SRC		:= src
-INCLUDE	:= include
+all: $(SUBDIRS)
 
-LIBRARIES	:= -lncurses
+$(SUBDIRS):
+	$(MAKE) -C $@
 
-EXECUTABLE	:= server
+.PHONY: $(SUBDIRS)
 
-all: $(OUT)/$(EXECUTABLE)
-
-clean:
-	-$(RM) $(OUT)/$(EXECUTABLE)
-
-run: all
-	./$(OUT)/$(EXECUTABLE)
-
-$(OUT)/$(EXECUTABLE): $(SRC)/*.c
-	$(CC) $(C_FLAGS) -I$(INCLUDE) $^ -o $@ $(LIBRARIES)
+clean: 
+	rm out/server out/client
