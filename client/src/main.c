@@ -128,7 +128,7 @@ int main(int argc, char **argv)
   int opt;
 
   //vou buscar o nome de utilizador do cliente
-  while ((opt = getopt(argc, argv, "u:p:n:")) != -1)
+  while ((opt = getopt(argc, argv, "u:p:")) != -1)
   {
     switch (opt)
     {
