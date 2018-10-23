@@ -6,3 +6,4 @@ Text Editor in C (Unix)
  - [x] Função para verificar username num determinado ficheiro;
  - [x] Edição e navegação de uma linha;
  - [X] Leitura e validação dos comandos/argumentos opcionais do servidor;
+ - [x] Leitura e validação das variáveis de ambiente do servidor e cliente.
