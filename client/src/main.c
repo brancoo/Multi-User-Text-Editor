@@ -76,24 +76,15 @@ void edit_array(WINDOW *win, char content[MAX_LINES][MAX_COLUMNS], int x, int y)
   x--;
   y--;
   
-  for(int i=0; i<MAX_LINES; i++){
-    for(int j=0; j<MAX_COLUMNS; j++){
-      if(i==y && j>=x){
-        if(j==44){
-          content[i][j]=content[i+1][0];
+  for(int i=0; i<MAX_COLUMNS; i++){
+      if(i>=x){
+        if(content[y][i+1]=='\n'){
+          content[y][i]=' ';
         }
         else
-        content[i][j]=content[i][j+1];
+        content[y][i]=content[y][i+1];
       }
-      if(i>y){
-        if(j==44){
-          content[i][j]=content[i+1][0];
-        }
-        else
-        content[i][j]=content[i][j+1];
-      }
-      place_in_editor(win, i, j, content[i][j]);
-    }
+      place_in_editor(win, y, i, content[y][i]);
   }
 }
 
