@@ -48,5 +48,10 @@
 .tmp_versions/
 modules.order
 Module.symvers
+
+out/server
+out/client
+
+our
 Mkfile.old
 dkms.conf

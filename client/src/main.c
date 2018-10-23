@@ -102,6 +102,7 @@ void edit_array(WINDOW *win, char content[MAX_LINES][MAX_COLUMNS], int x, int y)
     }
     place_in_editor(win, y, i, content[y][i]);
   }
+  editor.num_chars--;
 }
 
 void edit_editor(WINDOW *win, char content[MAX_LINES][MAX_COLUMNS], char c,
@@ -115,8 +116,9 @@ void edit_editor(WINDOW *win, char content[MAX_LINES][MAX_COLUMNS], char c,
     return;
   }
 
-  content[x][y] = c;
+  content[y][x] = c;
   place_in_editor(win, y, x, c);
+  editor.num_chars++;
 }
 
 int main(int argc, char **argv)
@@ -158,6 +160,7 @@ int main(int argc, char **argv)
   wmove(my_win, y, x);
 
   print_content(my_win, editor.content);
+  
 
   mvwprintw(info, 1, 1, "Chars : ");
   mvwprintw(info, 1, 9, "%d", editor.num_chars);
@@ -178,6 +181,7 @@ int main(int argc, char **argv)
     case 127:           //backspace
 
       edit_array(my_win, editor.content, x, y);
+      //print_content(my_win, editor.content);
 
       break;
     case 10:
@@ -225,6 +229,8 @@ int main(int argc, char **argv)
     }
 
     wmove(my_win, y, x);
+    mvwprintw(info, 1, 9, "%d", editor.num_chars);
+    wrefresh(info);
     wrefresh(my_win);
   }
 
