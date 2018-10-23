@@ -12,8 +12,7 @@
 Editor editor;
 
 void load_file(char *filename) {
-  FILE *file = fopen(filename, "rt");
-  char c;
+  FILE *file = fopen(filename, "r");
 
   if (file == NULL) {
     printf("Erro ao carregar ficheiro : %s\n", filename);
@@ -23,7 +22,6 @@ void load_file(char *filename) {
   for (int x = 0; x < MAX_LINES; x++) {
     for (int y = 0; y < MAX_COLUMNS; y++) {
       fscanf(file, "%c", &editor.content[x][y]);
-
     }
   }
 
@@ -35,7 +33,6 @@ void init_editor() {
   editor.cursor.y = 11;
   editor.lines = 15;
   editor.columns = 45;
-  //editor.size = 0;
   editor.screenrows = 0;
   editor.filename = NULL;
   editor.num_chars = 0;
@@ -50,13 +47,12 @@ WINDOW *create_win(int height, int width, int starty, int startx) {
 }
 
 void place_in_editor(WINDOW *win, int x, int y, char c) {
-  if(c=='\n')
-  return;
+  if (c == '\n')
+    return;
 
-x++;
-y++;
-mvwprintw(win, x, y, "%c", c);
-  
+  x++;
+  y++;
+  mvwprintw(win, x, y, "%c", c);
 }
 
 void print_content(WINDOW *win, char content[MAX_LINES][MAX_COLUMNS]) {
@@ -70,17 +66,17 @@ void print_content(WINDOW *win, char content[MAX_LINES][MAX_COLUMNS]) {
   }
 }
 
-void edit_editor(WINDOW *win, char content[MAX_LINES][MAX_COLUMNS], char c, int x, int y){
+void edit_editor(WINDOW *win, char content[MAX_LINES][MAX_COLUMNS], char c,
+                 int x, int y) {
   x--;
   y--;
-  
-  if(c== '\n'){
+
+  if (c == '\n') {
     return;
   }
 
-  content[x][y]=c;
+  content[x][y] = c;
   place_in_editor(win, y, x, c);
-  
 }
 
 int main(int argc, char **argv) {
@@ -96,7 +92,7 @@ int main(int argc, char **argv) {
 
   initscr();
   cbreak();
-  keypad(stdscr, TRUE); //para ativar a leitura das setas
+  keypad(stdscr, TRUE); // para ativar a leitura das setas
   noecho();
 
   printw("Press Esc to exit");
@@ -115,11 +111,23 @@ int main(int argc, char **argv) {
   wrefresh(info);
 
   // Start with cursor in 1 1
-  wmove(my_win, 1, 1);  //meter cursor no inicio da 1 janela
+  wmove(my_win, 1, 1); // meter cursor no inicio da 1 janela
   wrefresh(my_win);
 
-  while ((ch = getch()) != 27) {    //sai ciclo quando clicar escape
+  while ((ch = getch()) != 27) { // sai ciclo quando clicar escape
     switch (ch) {
+    case KEY_DC:
+    case 8:
+    case 127:
+      y += 1;
+      x = 1;
+      break;
+    case 10:
+      if (y < 15) {
+        y += 1;
+        x = 1;
+      }
+      break;
     case KEY_LEFT:
       if (x > 1) {
         x--;
@@ -140,21 +148,20 @@ int main(int argc, char **argv) {
         y++;
       }
       break;
-    default :
-    edit_editor(my_win, editor.content, ch, x, y);
-    if(x==45 && y<15){
-      x=0;
-      y++;
+    default:
+      edit_editor(my_win, editor.content, ch, x, y);
+      if (x == 45 && y <15) {
+        y++;      
+        x = 0;
+        } 
+    if(x!=45 && y<=15){
+      x++;
+     }
+
     }
-    if(x!=45 && y<=15)
-    x++;
-    }
-   
 
     wmove(my_win, y, x);
     wrefresh(my_win);
-
-
   }
 
   endwin();

@@ -1,4 +1,4 @@
-#include "../include/estruturas.h"
+#include "estruturas.h"
 #include <curses.h>
 #include <ncurses.h>
 #include <stdio.h>
@@ -55,6 +55,12 @@ void place_in_editor(WINDOW *win, int x, int y, char c) {
   mvwprintw(win, x, y, "%c", c);
 }
 
+void place_in_editor_2(WINDOW *win, int x, int y, char c){
+  x++;
+  y++;
+  mvwprintw(win, x, y, "%c", c);
+}
+
 void print_content(WINDOW *win, char content[MAX_LINES][MAX_COLUMNS]) {
   for (int i = 0; i < MAX_LINES; i++) {
     for (int j = 0; j < MAX_COLUMNS; j++) {
@@ -62,6 +68,31 @@ void print_content(WINDOW *win, char content[MAX_LINES][MAX_COLUMNS]) {
         place_in_editor(win, i, j, content[i][j]);
         editor.num_chars++;
       }
+    }
+  }
+}
+
+void edit_array(WINDOW *win, char content[MAX_LINES][MAX_COLUMNS], int x, int y){
+  x--;
+  y--;
+  
+  for(int i=0; i<MAX_LINES; i++){
+    for(int j=0; j<MAX_COLUMNS; j++){
+      if(i==y && j>=x){
+        if(j==44){
+          content[i][j]=content[i+1][0];
+        }
+        else
+        content[i][j]=content[i][j+1];
+      }
+      if(i>y){
+        if(j==44){
+          content[i][j]=content[i+1][0];
+        }
+        else
+        content[i][j]=content[i][j+1];
+      }
+      place_in_editor(win, i, j, content[i][j]);
     }
   }
 }
@@ -78,6 +109,8 @@ void edit_editor(WINDOW *win, char content[MAX_LINES][MAX_COLUMNS], char c,
   content[x][y] = c;
   place_in_editor(win, y, x, c);
 }
+
+
 
 int main(int argc, char **argv) {
   init_editor();
@@ -111,16 +144,18 @@ int main(int argc, char **argv) {
   wrefresh(info);
 
   // Start with cursor in 1 1
-  wmove(my_win, 1, 1); // meter cursor no inicio da 1 janela
+  wmove(my_win, 1, 1); // meter cursor na pos 1,1
   wrefresh(my_win);
 
   while ((ch = getch()) != 27) { // sai ciclo quando clicar escape
     switch (ch) {
-    case KEY_DC:
-    case 8:
-    case 127:
-      y += 1;
-      x = 1;
+    case KEY_DC:      //delete
+    case KEY_BACKSPACE:     //backspace
+    case 8:           //delete
+    case 127:         //backspace
+
+    edit_array(my_win, editor.content, x, y);
+
       break;
     case 10:
       if (y < 15) {
@@ -150,12 +185,14 @@ int main(int argc, char **argv) {
       break;
     default:
       edit_editor(my_win, editor.content, ch, x, y);
-      if (x == 45 && y < 15) {
+      if (x == 45 && y <15) {
+        y++;      
         x = 0;
-        y++;
-      } else {
+      } 
+      if(x!=45 && y<=15){
         x++;
       }
+
     }
 
     wmove(my_win, y, x);
