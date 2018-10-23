@@ -1,10 +1,11 @@
-#include "../../include/estruturas.h"
+#include "estruturas.h"
 //#include <curses.h>
 #include <ncurses.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <getopt.h>
 
 #define WIDTH 47
 #define HEIGHT 17
@@ -123,21 +124,36 @@ void edit_editor(WINDOW *win, char content[MAX_LINES][MAX_COLUMNS], char c,
 
 int main(int argc, char **argv)
 {
-  char user[8];
+  char user[8], pipe[10];
   int opt;
 
   //vou buscar o nome de utilizador do cliente
-  if ((opt = getopt(argc, argv, "-u")) != -1)
+  while ((opt = getopt(argc, argv, "u:p:n:")) != -1)
   {
-    strcpy(user,argv[2]);
+    switch (opt)
+    {
+    case 'u'://vai analisar se -u foi introduzido pelo user
+      if (optarg)
+        strcpy(user, optarg);//se houver argumento copia-o para a variável user
+      else
+      {
+        printf("Username: ");//senão existir então é pedido explicitamente
+        scanf("%s", user);
+      }
+      break;
+    case 'p':
+      if (optarg)//vai analisar se -p foi introduzido pelo user
+        strcpy(pipe, optarg);//copia o valor do argumento para a variável pipe
+      else
+      {
+        strcpy(pipe,PIPE);//senão existir argumento opcional, toma o valor por omissão
+      }
+      break;
+    }
   }
-  else
-  {
-    printf("Username:");
-    scanf("%s", user);
-  }
+
   init_editor();
-  load_file("./out/text.txt");
+  load_file("text.txt");
 
   int ch;
   int x = 1;
@@ -160,7 +176,6 @@ int main(int argc, char **argv)
   wmove(my_win, y, x);
 
   print_content(my_win, editor.content);
-  
 
   mvwprintw(info, 1, 1, "Chars : ");
   mvwprintw(info, 1, 9, "%d", editor.num_chars);
