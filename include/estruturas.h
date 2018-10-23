@@ -2,6 +2,8 @@
 
 #define MAX_LINES 15
 #define MAX_COLUMNS 45
+#define MEDIT_TIMEOUT 10
+#define MEDIT_MAXUSERS 3
 #define PIPE "main_pipe"
 
 typedef struct {

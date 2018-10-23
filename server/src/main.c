@@ -9,6 +9,16 @@
 Editor editor;
 int max_users;
 
+bool verify_file_existence(char *file){
+    FILE *f = fopen(file, "r");
+
+    if(f == NULL){
+        return 1;
+    }else{
+        return 0;
+    }
+}
+
 int getMAX_USERS(int n){  //vai ser preciso para o MAX_USERS
     srand(time(NULL));
     return rand() % n;
@@ -49,14 +59,14 @@ void verify_env_var(){
     }
 
     if(getenv("MEDIT_TIMEOUT") == NULL)
-        editor.timeout = 10;
+        editor.timeout = MEDIT_TIMEOUT;
     else{
         editor.timeout = atoi(getenv("MEDIT_TIMEOUT"));
     }
     if(getenv("MEDIT_MAXUSERS") == NULL)
-        max_users = getMAX_USERS(editor.lines);
+        max_users = MEDIT_MAXUSERS;
     else{
-        max_users = 3;
+        max_users = getMAX_USERS(editor.lines);
     }
 }
 
@@ -67,15 +77,16 @@ int main(int argc, char *argv[])
     
     //saber se o admin enviou pela linha de comandos
     if((opt = getopt(argc, argv, "-f")) != -1){
-        file = argv[2];  //guardar o nome da base de dados que contém os usernames
-        printf("Nome da Base de Dados escolhida: %s\n", file);
+        if (verify_file_existence(file) == 0) //verificar se o ficheiro dado pelo admin existe
+            file = argv[2];  //guardar o nome da base de dados que contém os usernames
+        else{
+            printf("Ficheiro nao existe!\n");
+        }
     }
     else{
-        file = "text.txt";
+        file = "medit.db";
         printf("Base de dados assumida por defeito: %s\n",file);
     }
-
         verify_env_var();
-
         return 0;
 }

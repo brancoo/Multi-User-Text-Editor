@@ -1,4 +1,4 @@
-#include "estruturas.h";
+#include "estruturas.h"
 
 extern Editor editor;
 extern int max_users;
