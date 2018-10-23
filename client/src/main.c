@@ -93,7 +93,7 @@ void edit_array(WINDOW *win, char content[MAX_LINES][MAX_COLUMNS], int x, int y)
   {
     if (i >= x)
     {
-      if (content[y][i + 1] == '\n')
+      if (content[y][i + 1] == '\n' || i == 44)
       {
         content[y][i] = ' ';
       }
