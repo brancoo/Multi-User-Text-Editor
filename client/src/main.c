@@ -121,18 +121,18 @@ void edit_editor(WINDOW *win, char content[MAX_LINES][MAX_COLUMNS], char c,
 
 int main(int argc, char **argv)
 {
-  char *username = NULL;
+  char user[8];
   int opt;
 
   //vou buscar o nome de utilizador do cliente
   if ((opt = getopt(argc, argv, "-u")) != -1)
   {
-    username = argv[2];
+    strcpy(user,argv[2]);
   }
   else
   {
     printf("Username:");
-    scanf("%s", username);
+    scanf("%s", user);
   }
   init_editor();
   load_file("text.txt");
@@ -149,7 +149,7 @@ int main(int argc, char **argv)
   keypad(stdscr, TRUE); // para ativar a leitura das setas
   noecho();
 
-  printw("Bem Vindo: %s\tPress Esc to exit", username);
+  printw("Bem Vindo: %s\tPress Esc to exit", user);
   refresh();
 
   my_win = create_win(HEIGHT, WIDTH, y, x);
