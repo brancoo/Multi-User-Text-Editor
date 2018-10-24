@@ -13,7 +13,7 @@ int cmd(char *com)
     char *p = strtok(com, " ");
     int n_spaces = 0;
 
-    FILE *f = fopen("../out/text.txt", "a+");
+    FILE *f = fopen("out/text.txt", "a+");
     if (!f)
     {
         printf("ERRO! Ao abrir o ficheiro!\n");
