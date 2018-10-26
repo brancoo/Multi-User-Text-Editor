@@ -30,6 +30,7 @@ bool find_username(char *username, char *filename) {
 
   if (f == NULL) {
     printf("ERRO AO ABRIR FICHEIRO!\n");
+    fclose(f);	
     return false;
   }
 
@@ -81,7 +82,7 @@ int main(int argc, char *argv[]) {
     switch (opt) {
     case 'f':
       if (optarg){
-        if(verify_file_existence(argv[2]) == 0) //se existir argumento e seo ficheiro existir
+        if(verify_file_existence(argv[2]) == 0) //se existir argumento e se o ficheiro existir
             file = argv[2]; 
       }
      else {  //caso não exista o argumento do nome do ficheiro
