@@ -6,6 +6,7 @@
 #define MEDIT_MAXUSERS 3
 #define PIPE "main_pipe"
 
+
 typedef struct {
   int x, y;
 } Cursor;
@@ -25,5 +26,4 @@ typedef struct{
   char username[8];
   int pid;
   bool status; //modo navegação ou edição
-  int line_editing;
-}client;
+}user;

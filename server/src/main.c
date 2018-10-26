@@ -80,11 +80,15 @@ int main(int argc, char *argv[]) {
   while ((opt = getopt(argc, argv, "f:p:")) != -1) {
     switch (opt) {
     case 'f':
-      if (optarg && (verify_file_existence(argv[2]) == 0)) //se existir argumento e se existir o ficheiro
+      if (optarg){
+        if(verify_file_existence(argv[2]) == 0) //se existir argumento e seo ficheiro existir
             file = argv[2]; 
-     else {  //caso não exista argumento ou nao se encontre o ficheiro 
-        file = "medit.db";
-        printf("Base de dados assumida por defeito: %s\n", file);
+      }
+     else {  //caso não exista o argumento do nome do ficheiro
+        printf("Base de dados de usernames: ");
+        scanf("%s", file);
+        if (verify_file_existence(argv[2]) != 0) //caso o nome dado pelo admin nao exista, atribuímos a base de dados default
+          file = "../out/medit.db";
       }
       break;
     case 'p':
