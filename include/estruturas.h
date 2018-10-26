@@ -14,7 +14,6 @@ typedef struct {
 typedef struct {
   int lines, columns;
   Cursor cursor;
-  char *filename;
   char content[MAX_LINES][MAX_COLUMNS];
   int screenrows;
   int num_chars;

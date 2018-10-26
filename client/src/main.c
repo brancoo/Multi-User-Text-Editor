@@ -35,7 +35,6 @@ void init_editor() {
   editor.lines = 15;
   editor.columns = 45;
   editor.screenrows = 0;
-  editor.filename = NULL;
   editor.num_chars = 0;
 }
 
