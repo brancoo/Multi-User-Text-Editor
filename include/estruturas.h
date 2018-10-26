@@ -1,5 +1,4 @@
 #include <stdbool.h>
-
 #define MAX_LINES 15
 #define MAX_COLUMNS 45
 #define MEDIT_TIMEOUT 10

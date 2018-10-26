@@ -71,6 +71,9 @@ void edit_array(WINDOW *win, char content[MAX_LINES][MAX_COLUMNS], int x,
   x--;
   y--;
 
+  if(content[y][x]=='\0') 
+  return;
+  else{
   for (int i = 0; i < MAX_COLUMNS; i++) {
     if (i >= x) {
       if (content[y][i + 1] == '\n' || i == 44) {
@@ -79,8 +82,9 @@ void edit_array(WINDOW *win, char content[MAX_LINES][MAX_COLUMNS], int x,
         content[y][i] = content[y][i + 1];
     }
     place_in_editor(win, y, i, content[y][i]);
+   }
+   editor.num_chars--;
   }
-  editor.num_chars--;
 }
 
 void edit_editor(WINDOW *win, char content[MAX_LINES][MAX_COLUMNS], char c,
@@ -92,9 +96,12 @@ void edit_editor(WINDOW *win, char content[MAX_LINES][MAX_COLUMNS], char c,
     return;
   }
 
+  if(content[y][x]=='\0'){
+    editor.num_chars++;
+  }
+
   content[y][x] = c;
   place_in_editor(win, y, x, c);
-  editor.num_chars++;
 }
 
 int main(int argc, char **argv) {
@@ -119,7 +126,7 @@ int main(int argc, char **argv) {
     }
   }
 
-  if (user != NULL) {
+  if (strlen(user) == 0) {
       printf("Username: "); // senão existir então é pedido explicitamente
       scanf("%s", user);
   }
