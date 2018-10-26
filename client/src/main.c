@@ -125,7 +125,7 @@ int main(int argc, char **argv) {
   }
 
   init_editor();
-  load_file("out/text.txt");
+  load_file("../out/text.txt");
 
   int ch;
   int x = 1;
