@@ -119,7 +119,7 @@ int main(int argc, char **argv) {
     }
   }
 
-  if (user != NULL) {
+  if (strlen(user) == 0) {
       printf("Username: "); // senão existir então é pedido explicitamente
       scanf("%s", user);
   }
