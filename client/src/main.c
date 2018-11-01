@@ -13,7 +13,7 @@
 Editor editor;
 
 void load_file(char *filename) {
-  FILE *file = fopen(filename, "rt");
+  FILE *file = fopen(filename, "r");
 
   if (file == NULL) {
     printf("Erro ao carregar ficheiro : %s\n", filename);
@@ -27,15 +27,6 @@ void load_file(char *filename) {
   }
 
   fclose(file);
-}
-
-void init_editor() {
-  editor.cursor.x = 4;
-  editor.cursor.y = 11;
-  editor.lines = 15;
-  editor.columns = 45;
-  editor.screenrows = 0;
-  editor.num_chars = 0;
 }
 
 WINDOW *create_win(int height, int width, int starty, int startx) {
@@ -71,19 +62,19 @@ void edit_array(WINDOW *win, char content[MAX_LINES][MAX_COLUMNS], int x,
   x--;
   y--;
 
-  if(content[y][x]=='\0') 
-  return;
-  else{
-  for (int i = 0; i < MAX_COLUMNS; i++) {
-    if (i >= x) {
-      if (content[y][i + 1] == '\n' || i == 44) {
-        content[y][i] = ' ';
-      } else
-        content[y][i] = content[y][i + 1];
+  if (content[y][x] == '\0')
+    return;
+  else {
+    for (int i = 0; i < MAX_COLUMNS; i++) {
+      if (i >= x) {
+        if (content[y][i + 1] == '\n' || i == 44) {
+          content[y][i] = ' ';
+        } else
+          content[y][i] = content[y][i + 1];
+      }
+      place_in_editor(win, y, i, content[y][i]);
     }
-    place_in_editor(win, y, i, content[y][i]);
-   }
-   editor.num_chars--;
+    editor.num_chars--;
   }
 }
 
@@ -96,7 +87,7 @@ void edit_editor(WINDOW *win, char content[MAX_LINES][MAX_COLUMNS], char c,
     return;
   }
 
-  if(content[y][x]=='\0'){
+  if (content[y][x] == '\0') {
     editor.num_chars++;
   }
 
@@ -127,12 +118,11 @@ int main(int argc, char **argv) {
   }
 
   if (strlen(user) == 0) {
-      printf("Username: "); // senão existir então é pedido explicitamente
-      scanf("%s", user);
+    printf("Username: "); // senão existir então é pedido explicitamente
+    scanf("%s", user);
   }
 
-  init_editor();
-  load_file("out/text.txt");
+  load_file("../out/text.txt");
 
   int ch;
   int x = 1;
