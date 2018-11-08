@@ -1,10 +1,13 @@
 #include "estruturas.h"
 //#include <curses.h>
+#include <fcntl.h>
 #include <getopt.h>
 #include <ncurses.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 #include <unistd.h>
 
 #define WIDTH 47
@@ -96,32 +99,61 @@ void edit_editor(WINDOW *win, char content[MAX_LINES][MAX_COLUMNS], char c,
 }
 
 int main(int argc, char **argv) {
-  char user[8], pipe[10];
-  int opt;
+  char pipe[20], npipe[20];
+  int opt, fd;
+  aux temp;
+  // fd, file handler para lidar com o pipe
 
   // vou buscar o nome de utilizador do cliente
   while ((opt = getopt(argc, argv, "u:p:")) != -1) {
     switch (opt) {
-    case 'u':               // vai analisar se -u foi introduzido pelo user
-      strcpy(user, optarg); // se houver argumento copia-o para a variável user
+    case 'u':
+      if (optarg) // vai analisar se -u foi introduzido pelo user e guarda-o
+        strcpy(temp.user, optarg);
       break;
     case 'p':
       if (optarg)             // vai analisar se -p foi introduzido pelo user
         strcpy(pipe, optarg); // copia o valor do argumento para a variável pipe
-      else {
-        strcpy(
-            pipe,
-            PIPE); // senão existir argumento opcional, toma o valor por omissão
+      else { // senão existir argumento opcional, toma o valor por omissão
+        strcpy(pipe, PIPE);
       }
       break;
     }
   }
 
-  if (strlen(user) == 0) {
+  if (strlen(temp.user) == 0) {
     printf("Username: "); // senão existir então é pedido explicitamente
-    scanf("%s", user);
+    scanf("%s", temp.user);
   }
 
+  if (access(PIPE, F_OK) != 0) {
+    printf("O servidor nao se encontra em execucao. A sair...\n");
+    getch();
+    exit(0);
+  }
+  temp.pid = getpid();
+  sprintf(npipe, "../pipe-%d", temp.pid);
+  if (mkfifo(npipe, S_IRWXU) == -1) {
+    printf("Erro ao criar pipe. A sair...\n");
+    getch();
+    exit(0);
+  }
+
+  fd = open(PIPE, O_RDWR); // abrir para leitura/escrita
+  if (fd < 0) {
+    printf("Erro a abrir o pipe do servidor. A sair...\n");
+    getch();
+    exit(0);
+  }
+  char buffer[30];
+  write(fd, &temp, sizeof(temp));
+  int fd_client = open(npipe, O_RDONLY);
+  read(fd_client, buffer, sizeof(buffer));
+  printf("%s\n", buffer);
+  close(fd_client);
+  close(fd);
+  unlink(npipe);
+  /*
   load_file("../out/text.txt");
 
   int ch;
@@ -136,7 +168,7 @@ int main(int argc, char **argv) {
   keypad(stdscr, TRUE); // para ativar a leitura das setas
   noecho();
 
-  printw("Bem Vindo: %s\tPress Esc to exit", user);
+  printw("Bem Vindo: %s\tPress Esc to exit", temp.user);
   refresh();
 
   my_win = create_win(HEIGHT, WIDTH, y, x);
@@ -211,6 +243,6 @@ int main(int argc, char **argv) {
     wrefresh(my_win);
   }
 
-  endwin();
+  endwin(); */
   return 0;
 }

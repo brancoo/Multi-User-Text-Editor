@@ -36,6 +36,7 @@ void settings() {
          editor.lines, editor.columns, max_users, PIPE);
 }
 void load_settings(char *filename) { printf("OLA\n"); }
+
 void cmd(char *com) {
   char **arg = NULL;
   char *p = strtok(com, " ");

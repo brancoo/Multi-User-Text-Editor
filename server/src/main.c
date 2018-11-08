@@ -12,14 +12,14 @@
 Editor editor;
 int max_users;
 
-int getMAX_USERS(int n) { // vai ser preciso para o MAX_USERS
+void getMAX_USERS(int n) {
   srand(time(NULL));
-  return rand() % n;
+  max_users = rand() % n;
 }
 
 bool find_username(char *username, char *filename) {
-  FILE *f = fopen(filename, "rt");
-  char c, buffer[50];
+  FILE *f = fopen(filename, "r");
+  char buffer[9];
 
   if (f == NULL) {
     printf("ERRO AO ABRIR FICHEIRO!\n");
@@ -27,11 +27,10 @@ bool find_username(char *username, char *filename) {
     return false;
   }
 
-  while ((c = getc(f)) != EOF) {
-    fscanf(f, "%s", buffer);
+  while (fscanf(f, "%8s", buffer) == 1) {
     if (strcmp(buffer, username) == 0) {
-      return true;
       fclose(f);
+      return true;
     }
   }
   fclose(f);
@@ -62,7 +61,7 @@ void verify_env_var() {
   if (getenv("MEDIT_MAXUSERS") == NULL)
     max_users = MEDIT_MAXUSERS;
   else {
-    max_users = getMAX_USERS(editor.lines);
+    getMAX_USERS(editor.lines);
   }
   editor.screenrows = 0;
   editor.num_chars = 0;
@@ -71,37 +70,41 @@ void verify_env_var() {
 }
 
 int main(int argc, char *argv[]) {
-  char *file, comando[80], pipe[10];
-  int opt, fd_pipe;
-  // fd_pipe, filehandler para o pipe
+  char *file, comando[80], pipe[20];
+  int opt, fd_pipe, n_named_pipes;
+  aux temp;
+  // fd_pipe, filehandler para o pipe principal
   // opt, serve para ajudar a ler os argumentos opcionais da linha de comandos
+  // n_named_pipes, numero de named pipes de interação(para
+  // receberem ligações dos clientes)
 
   // saber se o admin enviou pela linha de comandos
-  while ((opt = getopt(argc, argv, "f:p:")) != -1) {
+  while ((opt = getopt(argc, argv, "f:p:n:")) != -1) {
     switch (opt) {
     case 'f':
-      if (optarg) {
-        if (verify_file_existence(argv[2]) ==
-            0) // se existir argumento e se o ficheiro existir
+      if (optarg) { // se existir argumento e se o ficheiro existir
+        if (verify_file_existence(argv[2]) == 0)
           file = argv[2];
-      } else { // caso não exista o argumento do nome do ficheiro
+      } else {
         printf("Base de dados de usernames: ");
         scanf("%s", file);
-        if (verify_file_existence(argv[2]) !=
-            0) // caso o nome dado pelo admin nao exista, atribuímos a base de
-               // dados default
-          file = "../out/medit.db";
+        if (verify_file_existence(argv[2]) != 0)
+          file = "../out/medit.db"; // valor por defeito!
       }
       break;
     case 'p':
       if (optarg)             // vai analisar se -p foi introduzido pelo user
         strcpy(pipe, optarg); // copia o valor do argumento para a variável pipe
-      else {
-        strcpy(
-            pipe,
-            PIPE); // senão existir argumento opcional, toma o valor por omissão
+      else { // senão existir argumento opcional, toma o valor por omissão
+        strcpy(pipe, PIPE);
       }
       break;
+    case 'n':
+      if (optarg)
+        n_named_pipes = atoi(argv[2]);
+      else { // assumimos por defeito, o valor 3 (=MAXUSERS)
+        n_named_pipes = MEDIT_MAXUSERS;
+      }
     }
   }
   verify_env_var();
@@ -115,22 +118,34 @@ int main(int argc, char *argv[]) {
     exit(0);
   }
 
-  fd_pipe = open(PIPE, O_RDWR); // vai abrir o pipe para leitura/escrita
+  // vai abrir o pipe para leitura/escrita
+  fd_pipe = open(PIPE, O_RDWR);
   if (fd_pipe == -1) {
-    printf("Erro ao abrir ficheiro. A sair...\n");
+    printf("Erro ao abrir pipe. A sair...\n");
     exit(0);
   }
   printf("Servidor iniciado!\n");
-
-  while (1) {
-    scanf(" %79[^\n]s", comando);
-    if (comando[strlen(comando) - 1] == '\n')
-      comando[strlen(comando) - 1] = '\0';
-    if (strcmp(comando, " ") != 0)
-      cmd(comando);
-    printf("Comando: %s\n", comando);
+  char client_fifo[50];
+  int client_fd;
+  read(fd_pipe, &temp, sizeof(temp));
+  sprintf(client_fifo, "../pipe-%d", temp.pid);
+  client_fd = open(client_fifo, O_WRONLY);
+  if (find_username(temp.user, "../out/medit.db") == true) {
+    write(client_fd, "Verificado!", strlen("Verificado"));
+  } else {
+    write(client_fd, "Nao encontrado!", strlen("Nao encontrado!"));
   }
   close(fd_pipe);
+  close(client_fd);
   unlink(PIPE);
+  /*
+    while (1) {
+      scanf(" %79[^\n]s", comando);
+      if (comando[strlen(comando) - 1] == '\n')
+        comando[strlen(comando) - 1] = '\0';
+      if (strcmp(comando, " ") != 0)
+        cmd(comando);
+      printf("Comando: %s\n", comando);
+    } */
   return 0;
 }
