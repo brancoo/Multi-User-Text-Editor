@@ -2,6 +2,7 @@
 #include "comandos.h"
 #include <fcntl.h>
 #include <getopt.h>
+#include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -10,6 +11,7 @@
 #include <unistd.h>
 
 Editor editor;
+aux temp; // estrutura auxiliar para validar login, e para a função shutdown()
 int max_users;
 
 void getMAX_USERS(int n) {
@@ -69,14 +71,35 @@ void verify_env_var() {
   editor.cursor.y = 5;
 }
 
+void shutdown() {
+  char pipe[20];
+  int fd;
+
+  sprintf(pipe, "../pipe-%d", temp.pid);
+  fd = open(pipe, O_WRONLY);
+
+  temp.action = 1;
+  write(fd, &temp, sizeof(temp));
+  printf("Programa terminado\n");
+  close(fd);
+  unlink(PIPE);
+  exit(0);
+}
+
+void SIGhandler(int sig) {
+  signal(sig, SIG_IGN);
+  shutdown();
+}
+
 int main(int argc, char *argv[]) {
   char *file, comando[80], pipe[20];
   int opt, fd_pipe, n_named_pipes;
-  aux temp;
   // fd_pipe, filehandler para o pipe principal
   // opt, serve para ajudar a ler os argumentos opcionais da linha de comandos
   // n_named_pipes, numero de named pipes de interação(para
   // receberem ligações dos clientes)
+
+  signal(SIGINT, SIGhandler);
 
   // saber se o admin enviou pela linha de comandos
   while ((opt = getopt(argc, argv, "f:p:n:")) != -1) {
@@ -132,20 +155,23 @@ int main(int argc, char *argv[]) {
   client_fd = open(client_fifo, O_WRONLY);
   if (find_username(temp.user, "../out/medit.db") == true) {
     write(client_fd, "Verificado!", strlen("Verificado"));
+    printf("User %s iniciou sessao!\n", temp.user);
   } else {
     write(client_fd, "Nao encontrado!", strlen("Nao encontrado!"));
   }
+
+  while (1) {
+    scanf(" %79[^\n]s", comando);
+    if (comando[strlen(comando) - 1] == '\n')
+      comando[strlen(comando) - 1] = '\0';
+    if (strcmp(comando, " ") != 0)
+      cmd(comando);
+    printf("Comando: %s\n", comando);
+  }
+
   close(fd_pipe);
   close(client_fd);
   unlink(PIPE);
-  /*
-    while (1) {
-      scanf(" %79[^\n]s", comando);
-      if (comando[strlen(comando) - 1] == '\n')
-        comando[strlen(comando) - 1] = '\0';
-      if (strcmp(comando, " ") != 0)
-        cmd(comando);
-      printf("Comando: %s\n", comando);
-    } */
+
   return 0;
 }

@@ -95,4 +95,5 @@ void cmd(char *com) {
     printf("Comando inválido!\n");
     return;
   }
+  free(arg);
 }

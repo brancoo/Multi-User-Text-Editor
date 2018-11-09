@@ -3,6 +3,7 @@
 #include <fcntl.h>
 #include <getopt.h>
 #include <ncurses.h>
+#include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -14,6 +15,7 @@
 #define HEIGHT 17
 
 Editor editor;
+aux temp;
 
 void load_file(char *filename) {
   FILE *file = fopen(filename, "r");
@@ -98,10 +100,25 @@ void edit_editor(WINDOW *win, char content[MAX_LINES][MAX_COLUMNS], char c,
   place_in_editor(win, y, x, c);
 }
 
+void verify() {
+  int fd;
+  char pipe[20];
+
+  sprintf(pipe, "../pipe-%d", getpid());
+  fd = open(pipe, O_RDONLY);
+  read(fd, &temp, sizeof(temp)); // está a ler endereços de memória
+  if (temp.action == 1) {
+    printf("Programa terminado!\n");
+    unlink(pipe);
+    exit(0);
+  } else {
+    return;
+  }
+}
+
 int main(int argc, char **argv) {
   char pipe[20], npipe[20];
-  int opt, fd;
-  aux temp;
+  int opt, fd, fd_client;
   // fd, file handler para lidar com o pipe
 
   // vou buscar o nome de utilizador do cliente
@@ -145,15 +162,14 @@ int main(int argc, char **argv) {
     getch();
     exit(0);
   }
+
   char buffer[30];
   write(fd, &temp, sizeof(temp));
-  int fd_client = open(npipe, O_RDONLY);
+  fd_client = open(npipe, O_RDONLY);
   read(fd_client, buffer, sizeof(buffer));
-  printf("%s\n", buffer);
-  close(fd_client);
-  close(fd);
-  unlink(npipe);
-  /*
+  printf("%s\n", buffer); // VAI DIZER SE O USER ESTÁ VERIFICADO OU NÃO
+  verify();
+
   load_file("../out/text.txt");
 
   int ch;
@@ -243,6 +259,7 @@ int main(int argc, char **argv) {
     wrefresh(my_win);
   }
 
-  endwin(); */
+  endwin();
+
   return 0;
 }

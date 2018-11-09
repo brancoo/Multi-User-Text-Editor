@@ -4,6 +4,7 @@ C_FLAGS := -Wall -Wextra
 OUT		:= ../out
 SRC		:= src
 INCLUDE	:= ../include
+LDFLAGS=-pthread
 
 LIBRARIES	:= -lncurses
 

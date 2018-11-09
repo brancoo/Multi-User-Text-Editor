@@ -11,7 +11,8 @@ typedef struct {
 
 typedef struct {
   char user[8];
-  int pid;
+  int pid, action;
+  // action = variavel para ajudar em acções como o SHUTDOWN, ente outras
 } aux;
 
 typedef struct {
