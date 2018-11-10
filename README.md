@@ -13,3 +13,9 @@ Text Editor in C (Unix)
  - [] Gestão dos clientes (detectar que existem, avisar que o servidor encerrou, etc) a funcionar;
  - [] Login dos utilizadores a funcionar;
  - [] Lançamento e comunicação com o dicionário preparada, incluindo verificações.
+
+
+# Bugs / A melhorar
+ - Má implementação quando se escreve no editor e se tenta apagar (repetição do caracter que se está a apagar);
+ - Organização do código.
+  
