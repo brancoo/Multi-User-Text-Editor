@@ -18,4 +18,5 @@ Text Editor in C (Unix)
 # Bugs / A melhorar
  - Má implementação quando se escreve no editor e se tenta apagar (repetição do caracter que se está a apagar);
  - Organização do código.
+ - Se tentarmos apagar um espaço em branco, o BACKSPACE buga e não consegue apagar nenhum caracter.
   
