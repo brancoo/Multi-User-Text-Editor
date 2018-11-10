@@ -89,34 +89,30 @@ void edit_editor(WINDOW *win, char content[MAX_LINES][MAX_COLUMNS], char c,
   int i, s;
   x--;
   y--;
-  s = strlen(content[y]);
-  i = x;
+  i = x; //guardar pos x
 
-  if (s != 0) {
-    if (s - 1 < MAX_COLUMNS) {
-      if (s - 1 > x) {
-        for (x = s; x != i; x--) {
-          if (content[y][x] == NULL) {
-            content[y][x] = ' ';
-          }
-          content[y][x] = content[y][x - 1];
-          place_in_editor(win, y, x, content[y][x]);
-        }
-        content[y][x] = c;
-        place_in_editor(win, y, x, content[y][x]);
-        editor.num_chars++;
-      } else {
-        content[y][x] = c;
-        place_in_editor(win, y, x, content[y][x]);
-        editor.num_chars++;
+  if (content[y][MAX_COLUMNS - 1] == ' ' ||
+      content[y][MAX_COLUMNS - 1] == '\0' || //verifica se a ultima coluna tem espaco enter ou null
+      content[y][MAX_COLUMNS - 1] == NULL) {
+    for (x = MAX_COLUMNS - 1; x != i; x--) {  //comeca a percorrer o array da ultima coluna ate a pos onde queremos meter o ch
+      if (content[y][x] == NULL) {
+        content[y][x] = ' ';
       }
-    } else
-      return;
-  } else {
-    content[y][x] = c;
+      if (content[y][x - 1] == NULL) {
+        content[y][x] = ' ';                          
+        place_in_editor(win, y, x, content[y][x]);
+      }
+      if (content[y][x - 1] != NULL) {
+        content[y][x] = content[y][x - 1];              //arrastar caracteres para a direita
+        place_in_editor(win, y, x, content[y][x]);
+      }
+    }
+    content[y][x] = c;                                  //colocar o caracter que queremos no sitio certo
     place_in_editor(win, y, x, content[y][x]);
     editor.num_chars++;
   }
+  else
+  return;
 }
 
 void verify() {
@@ -242,20 +238,6 @@ int main(int argc, char **argv) {
   while ((ch = getch()) != 27) // sai ciclo quando clicar escape
   {
     switch (ch) {
-    case KEY_DC:        // delete
-    case KEY_BACKSPACE: // backspace
-    case 8:             // delete
-    case 127:           // backspace
-
-      edit_array(my_win, editor.content, x, y);
-
-      break;
-    case 10:
-      if (y < 15) {
-        y += 1;
-        x = 1;
-      }
-      break;
     case KEY_LEFT:
       if (x > 1) {
         x--;
@@ -278,20 +260,51 @@ int main(int argc, char **argv) {
         y++;
       }
       break;
-    default:
-      edit_editor(my_win, editor.content, ch, x, y);
-      if (x == 45 && y < 15) {
-        y++;
-        x = 0;
+    case 10:
+      while ((ch = getch()) != 10) {
+
+        if (ch == 27) {
+          break;
+        }
+
+        switch (ch) {
+        case KEY_DC:        // delete
+        case KEY_BACKSPACE: // backspace
+        case 8:             // delete
+        case 127:           // backspace
+          edit_array(my_win, editor.content, x, y);
+          break;
+
+        case KEY_LEFT:
+          if (x > 1) {
+            x--;
+          }
+          break;
+        case KEY_RIGHT:
+          if (x < 45) // colunas
+          {
+            x++;
+          }
+          break;
+        case KEY_UP:
+          break;
+        case KEY_DOWN:
+          break;
+        default:
+          edit_editor(my_win, editor.content, ch, x, y);
+          if (x < 45) {
+            x++;
+          }
+        }
+        wmove(my_win, y, x);
+        mvwprintw(info, 1, 9, "%d", editor.num_chars);
+        wrefresh(info);
+        wrefresh(my_win);
       }
-      if (x != 45 && y <= 15) {
-        x++;
-      }
+      break;
     }
 
     wmove(my_win, y, x);
-    mvwprintw(info, 1, 9, "%d", editor.num_chars);
-    wrefresh(info);
     wrefresh(my_win);
   }
   endwin();
