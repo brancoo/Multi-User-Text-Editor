@@ -85,19 +85,37 @@ void edit_array(WINDOW *win, char content[MAX_LINES][MAX_COLUMNS], int x,
 
 void edit_editor(WINDOW *win, char content[MAX_LINES][MAX_COLUMNS], char c,
                  int x, int y) {
+  int i, s;
   x--;
   y--;
+  s = strlen(content[y]);
+  i = x;
 
-  if (c == '\n') {
-    return;
-  }
-
-  if (content[y][x] == '\0') {
+  if (s != 0) {
+    if (s - 1 < MAX_COLUMNS) {
+      if (s - 1 > x) {
+        for (x = s; x != i; x--) {
+          if(content[y][x] == NULL){
+          content[y][x] = ' ';
+          }
+          content[y][x] = content[y][x - 1];
+          place_in_editor(win, y, x, content[y][x]);
+        }
+        content[y][x] = c;
+        place_in_editor(win, y, x, content[y][x]);
+        editor.num_chars++;
+      } else {
+        content[y][x] = c;
+        place_in_editor(win, y, x, content[y][x]);
+        editor.num_chars++;
+      }
+    } else
+      return;
+  } else {
+    content[y][x] = c;
+    place_in_editor(win, y, x, content[y][x]);
     editor.num_chars++;
   }
-
-  content[y][x] = c;
-  place_in_editor(win, y, x, c);
 }
 
 void verify() {
@@ -168,7 +186,7 @@ int main(int argc, char **argv) {
   fd_client = open(npipe, O_RDONLY);
   read(fd_client, buffer, sizeof(buffer));
   printf("%s\n", buffer); // VAI DIZER SE O USER ESTÁ VERIFICADO OU NÃO
-  verify();
+  // verify();
 
   load_file("../out/text.txt");
 

@@ -159,7 +159,9 @@ int main(int argc, char *argv[]) {
   } else {
     write(client_fd, "Nao encontrado!", strlen("Nao encontrado!"));
   }
-
+close(fd_pipe);
+  close(client_fd);
+  unlink(PIPE);
   while (1) {
     scanf(" %79[^\n]s", comando);
     if (comando[strlen(comando) - 1] == '\n')
@@ -169,9 +171,7 @@ int main(int argc, char *argv[]) {
     printf("Comando: %s\n", comando);
   }
 
-  close(fd_pipe);
-  close(client_fd);
-  unlink(PIPE);
+  
 
   return 0;
 }
