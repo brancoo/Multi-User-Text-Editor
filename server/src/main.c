@@ -80,8 +80,8 @@ void shutdown() {
 
   temp.action = 1;
   write(fd, &temp, sizeof(temp));
-  printf("Programa terminado\n");
   close(fd);
+  printf("Programa terminado\n");
   unlink(PIPE);
   exit(0);
 }
@@ -159,9 +159,6 @@ int main(int argc, char *argv[]) {
   } else {
     write(client_fd, "Nao encontrado!", strlen("Nao encontrado!"));
   }
-close(fd_pipe);
-  close(client_fd);
-  unlink(PIPE);
   while (1) {
     scanf(" %79[^\n]s", comando);
     if (comando[strlen(comando) - 1] == '\n')
@@ -171,7 +168,9 @@ close(fd_pipe);
     printf("Comando: %s\n", comando);
   }
 
-  
+  close(fd_pipe);
+  close(client_fd);
+  unlink(PIPE);
 
   return 0;
 }

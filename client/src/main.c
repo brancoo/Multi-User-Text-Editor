@@ -4,6 +4,7 @@
 #include <getopt.h>
 #include <ncurses.h>
 #include <pthread.h>
+#include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -95,8 +96,8 @@ void edit_editor(WINDOW *win, char content[MAX_LINES][MAX_COLUMNS], char c,
     if (s - 1 < MAX_COLUMNS) {
       if (s - 1 > x) {
         for (x = s; x != i; x--) {
-          if(content[y][x] == NULL){
-          content[y][x] = ' ';
+          if (content[y][x] == NULL) {
+            content[y][x] = ' ';
           }
           content[y][x] = content[y][x - 1];
           place_in_editor(win, y, x, content[y][x]);
@@ -133,12 +134,28 @@ void verify() {
     return;
   }
 }
+void shutdown() {
+  char pipe[20];
+  sprintf(pipe, "pipe-%d", getpid());
+  unlink(pipe);
+  clear();
+  printw("Programa terminado!\n");
+  refresh();
+  getch();
+  endwin();
+  exit(0);
+}
+void SIGhandler(int sig) {
+  signal(sig, SIG_IGN);
+  shutdown();
+}
 
 int main(int argc, char **argv) {
   char pipe[20], npipe[20];
   int opt, fd, fd_client;
   // fd, file handler para lidar com o pipe
 
+  signal(SIGINT, SIGhandler);
   // vou buscar o nome de utilizador do cliente
   while ((opt = getopt(argc, argv, "u:p:")) != -1) {
     switch (opt) {
@@ -147,8 +164,9 @@ int main(int argc, char **argv) {
         strcpy(temp.user, optarg);
       break;
     case 'p':
-      if (optarg)             // vai analisar se -p foi introduzido pelo user
-        strcpy(pipe, optarg); // copia o valor do argumento para a variável pipe
+      if (optarg) // vai analisar se -p foi introduzido pelo user
+        strcpy(pipe,
+               optarg); // copia o valor do argumento para a variável pipe
       else { // senão existir argumento opcional, toma o valor por omissão
         strcpy(pipe, PIPE);
       }
@@ -276,8 +294,8 @@ int main(int argc, char **argv) {
     wrefresh(info);
     wrefresh(my_win);
   }
-
   endwin();
-
+  close(fd);
+  unlink(pipe);
   return 0;
 }
