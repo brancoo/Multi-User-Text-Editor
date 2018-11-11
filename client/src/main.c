@@ -63,6 +63,18 @@ void print_content(WINDOW *win, char content[MAX_LINES][MAX_COLUMNS]) {
   }
 }
 
+void recovery_array(WINDOW *win, char array[MAX_COLUMNS],
+                    char content[MAX_LINES][MAX_COLUMNS], int y, int x) {
+  x--;
+  y--;
+  for (int i = 0; i < MAX_COLUMNS; i++) {
+    content[y][i] = array[i];
+    place_in_editor(win, y, i, content[y][x]);
+    printf("%c", content[y][i]);
+    
+  }
+}
+
 void edit_array(WINDOW *win, char content[MAX_LINES][MAX_COLUMNS], int x,
                 int y) {
   x--;
@@ -89,30 +101,32 @@ void edit_editor(WINDOW *win, char content[MAX_LINES][MAX_COLUMNS], char c,
   int i, s;
   x--;
   y--;
-  i = x; //guardar pos x
+  i = x; // guardar pos x, da coluna
 
   if (content[y][MAX_COLUMNS - 1] == ' ' ||
-      content[y][MAX_COLUMNS - 1] == '\0' || //verifica se a ultima coluna tem espaco enter ou null
+      content[y][MAX_COLUMNS - 1] ==
+          '\0' || // verifica se a ultima coluna tem espaco enter ou null
       content[y][MAX_COLUMNS - 1] == NULL) {
-    for (x = MAX_COLUMNS - 1; x != i; x--) {  //comeca a percorrer o array da ultima coluna ate a pos onde queremos meter o ch
+    for (x = MAX_COLUMNS - 1; x != i;
+         x--) { // comeca a percorrer o array da ultima coluna ate a pos onde
+                // queremos meter o ch
       if (content[y][x] == NULL) {
         content[y][x] = ' ';
       }
       if (content[y][x - 1] == NULL) {
-        content[y][x] = ' ';                          
+        content[y][x] = ' ';
         place_in_editor(win, y, x, content[y][x]);
       }
       if (content[y][x - 1] != NULL) {
-        content[y][x] = content[y][x - 1];              //arrastar caracteres para a direita
+        content[y][x] = content[y][x - 1]; // arrastar caracteres para a direita
         place_in_editor(win, y, x, content[y][x]);
       }
     }
-    content[y][x] = c;                                  //colocar o caracter que queremos no sitio certo
+    content[y][x] = c; // colocar o caracter que queremos no sitio certo
     place_in_editor(win, y, x, content[y][x]);
     editor.num_chars++;
-  }
-  else
-  return;
+  } else
+    return;
 }
 
 void verify() {
@@ -237,6 +251,10 @@ int main(int argc, char **argv) {
 
   while ((ch = getch()) != 27) // sai ciclo quando clicar escape
   {
+    char s[MAX_COLUMNS];
+    for (int i = 0; i < MAX_COLUMNS; i++) {
+      s[i] = editor.content[y - 1][i];
+    }
     switch (ch) {
     case KEY_LEFT:
       if (x > 1) {
@@ -264,6 +282,7 @@ int main(int argc, char **argv) {
       while ((ch = getch()) != 10) {
 
         if (ch == 27) {
+          recovery_array(my_win, s, editor.content, y, x);
           break;
         }
 
@@ -301,10 +320,11 @@ int main(int argc, char **argv) {
         wrefresh(info);
         wrefresh(my_win);
       }
-      break;
     }
 
     wmove(my_win, y, x);
+    mvwprintw(info, 1, 9, "%d", editor.num_chars);
+    wrefresh(info);
     wrefresh(my_win);
   }
   endwin();
