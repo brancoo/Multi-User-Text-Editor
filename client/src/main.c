@@ -243,9 +243,14 @@ int main(int argc, char **argv) {
   mvwprintw(info, 1, 9, "%d", editor.num_chars);
 
   wrefresh(info);
-
-  // Start with cursor in 1 1
-  wmove(my_win, 1, 1); // meter cursor na pos 1,1
+  for (y = 1; y <= MAX_LINES; y++) {
+    x = 49;
+    mvprintw(y + 1, x, "Linha %2d", y);
+  }
+  x = 1;
+  y = 1;
+  wmove(my_win, y, x); // Start with cursor in 1 1
+  refresh();
   wrefresh(my_win);
 
   while ((ch = getch()) != 27) // sai ciclo quando clicar escape
