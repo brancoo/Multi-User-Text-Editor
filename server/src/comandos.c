@@ -35,7 +35,7 @@ void settings() {
          "Utilizadores: %d\nNome do Pipe Principal: %s\n",
          editor.lines, editor.columns, max_users, PIPE);
 }
-void load_settings(char *filename) { printf("OLA\n"); }
+void load_settings(char *filename) {}
 
 void cmd(char *com) {
   char **arg = NULL;
@@ -74,26 +74,26 @@ void cmd(char *com) {
       printf("Faltam argumentos!\n");
       return;
     }
-  } /*else if (strcmp(arg[0], "free") == 0) {
-    if (arg[1])
-      free_row(atoi(arg[1])); // libertar/apagar o conteúdo de determinada linha
-    else {
-      printf("Faltam argumentos!\n");
-      return;
-    }
-  } else if (strcmp(arg[0], "statistics") == 0)
-    statistics();
-  else if (strcmp(arg[0], "users") == 0)
-    users();
-  else if (strcmp(arg[0], "text") == 0)
-    text();
-  else if (strcmp(arg[0], "shutdown") == 0)
+  } else if (strcmp(arg[0], "shutdown") == 0)
     shutdown();
   else if (strcmp(arg[0], "settings") == 0)
-    settings(); */
+    settings();
+  else if (strcmp(arg[0], "sair") == 0)
+    shutdown();
+  /*else if (strcmp(arg[0], "free") == 0) {
+   if (arg[1])
+     free_row(atoi(arg[1])); // libertar/apagar o conteúdo de determinada
+ linha else { printf("Faltam argumentos!\n"); return;
+   }
+ } else if (strcmp(arg[0], "statistics") == 0)
+   statistics();
+ else if (strcmp(arg[0], "users") == 0)
+   users();
+ else if (strcmp(arg[0], "text") == 0)
+   text();
   else {
     printf("Comando inválido!\n");
     return;
-  }
+  } */
   free(arg);
 }

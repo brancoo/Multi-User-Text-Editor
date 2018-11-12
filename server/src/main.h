@@ -10,3 +10,4 @@ bool find_username(char *username, char *filename);
 void verify_env_var();
 void SIGhandler(int sig);
 void shutdown();
+void *receiver();

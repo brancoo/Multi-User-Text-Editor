@@ -2,6 +2,7 @@
 #include "comandos.h"
 #include <fcntl.h>
 #include <getopt.h>
+#include <pthread.h>
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -86,19 +87,46 @@ void shutdown() {
   exit(0);
 }
 
+void *receiver() {
+  aux receive, send;
+  int fd, fd_send, stop = 0;
+  char pipe[20];
+
+  mkfifo(PIPE, 0600);
+  fd = open(PIPE, O_RDWR);
+  do {
+    read(fd, &receive, sizeof(receive));
+    sprintf(pipe, "../pipe-%d", receive.pid);
+    fd_send = open(pipe, O_WRONLY);
+    switch (receive.action) {
+    case 2:
+      if (find_username(receive.user, "../out/medit.db") == true) {
+        write(fd_send, "Verificado!", strlen("Verificado"));
+        printf("User %s iniciou sessao!\n", receive.user);
+      } else {
+        write(fd_send, "Nao encontrado!", strlen("Nao encontrado!"));
+      }
+    default:
+      break;
+    }
+  } while (1);
+  close(fd);
+  pthread_exit(0);
+}
+
 void SIGhandler(int sig) {
   signal(sig, SIG_IGN);
   shutdown();
 }
 
 int main(int argc, char *argv[]) {
-  char *file, comando[80], pipe[20];
-  int opt, fd_pipe, n_named_pipes;
+  char *file, comando[80], pipe[20], client_pipe[50];
+  int opt, fd_pipe, n_named_pipes, client_fd, res;
+  pthread_t thread;
   // fd_pipe, filehandler para o pipe principal
   // opt, serve para ajudar a ler os argumentos opcionais da linha de comandos
-  // n_named_pipes, numero de named pipes de interação(para
-  // receberem ligações dos clientes)
-
+  // n_named_pipes, numero de named pipes de interação
+  // res = auxiliar para criar thread
   signal(SIGINT, SIGhandler);
 
   // saber se o admin enviou pela linha de comandos
@@ -148,28 +176,23 @@ int main(int argc, char *argv[]) {
     exit(0);
   }
   printf("Servidor iniciado!\n");
-  char client_fifo[50];
-  int client_fd;
-  read(fd_pipe, &temp, sizeof(temp));
-  sprintf(client_fifo, "../pipe-%d", temp.pid);
-  client_fd = open(client_fifo, O_WRONLY);
-  if (find_username(temp.user, "../out/medit.db") == true) {
-    write(client_fd, "Verificado!", strlen("Verificado"));
-    printf("User %s iniciou sessao!\n", temp.user);
-  } else {
-    write(client_fd, "Nao encontrado!", strlen("Nao encontrado!"));
+
+  // Thread serve para ler duas entradas de dados (comandos e cliente)
+  res = pthread_create(&thread, NULL, &receiver, NULL);
+  if (res != 0) {
+    perror("ERRO! A criar a thread!!!\n");
+    exit(1);
   }
+
   while (1) {
     scanf(" %79[^\n]s", comando);
     if (comando[strlen(comando) - 1] == '\n')
       comando[strlen(comando) - 1] = '\0';
     if (strcmp(comando, " ") != 0)
       cmd(comando);
-    printf("Comando: %s\n", comando);
   }
 
   close(fd_pipe);
-  close(client_fd);
   unlink(PIPE);
 
   return 0;

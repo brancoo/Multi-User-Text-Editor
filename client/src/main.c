@@ -69,14 +69,12 @@ void recovery_array(WINDOW *win, char array[MAX_COLUMNS],
   y--;
   for (int i = 0; i < MAX_COLUMNS; i++) {
     content[y][i] = array[i];
-    place_in_editor(win, y, i, content[y][x]);
-    printf("%c", content[y][i]);
-    
+    // place_in_editor(win, y, i, content[y][x]);
   }
 }
 
-void edit_array(WINDOW *win, char content[MAX_LINES][MAX_COLUMNS], int x,
-                int y) {
+void delete_char(WINDOW *win, char content[MAX_LINES][MAX_COLUMNS], int x,
+                 int y) {
   x--;
   y--;
 
@@ -96,8 +94,8 @@ void edit_array(WINDOW *win, char content[MAX_LINES][MAX_COLUMNS], int x,
   }
 }
 
-void edit_editor(WINDOW *win, char content[MAX_LINES][MAX_COLUMNS], char c,
-                 int x, int y) {
+void add_char(WINDOW *win, char content[MAX_LINES][MAX_COLUMNS], char c, int x,
+              int y) {
   int i, s;
   x--;
   y--;
@@ -210,6 +208,7 @@ int main(int argc, char **argv) {
   }
 
   char buffer[30];
+  temp.action = 2;
   write(fd, &temp, sizeof(temp));
   fd_client = open(npipe, O_RDONLY);
   read(fd_client, buffer, sizeof(buffer));
@@ -291,7 +290,7 @@ int main(int argc, char **argv) {
         case KEY_BACKSPACE: // backspace
         case 8:             // delete
         case 127:           // backspace
-          edit_array(my_win, editor.content, x, y);
+          delete_char(my_win, editor.content, x, y);
           break;
 
         case KEY_LEFT:
@@ -310,7 +309,7 @@ int main(int argc, char **argv) {
         case KEY_DOWN:
           break;
         default:
-          edit_editor(my_win, editor.content, ch, x, y);
+          add_char(my_win, editor.content, ch, x, y);
           if (x < 45) {
             x++;
           }
