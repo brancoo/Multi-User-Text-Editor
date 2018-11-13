@@ -87,7 +87,7 @@ void delete_char(WINDOW *win, char content[MAX_LINES][MAX_COLUMNS], int x,
   else {
     for (int i = 0; i < MAX_COLUMNS; i++) {
       if (i >= x) {
-        if (content[y][i + 1] == '\n' || i == 44) {
+        if (content[y][i + 1] == '\n' || content[y][i + 1] == NULL || i == 44) {
           content[y][i] = ' ';
         } else
           content[y][i] = content[y][i + 1];
@@ -296,6 +296,8 @@ int main(int argc, char **argv) {
 
         if (ch == 27) {
           recovery_array(my_win, s, editor.content, y, x);
+          mvprintw(y + 1, 58, "        ");
+          refresh();
           break;
         }
 
@@ -334,7 +336,8 @@ int main(int argc, char **argv) {
         wrefresh(my_win);
       }
     }
-
+    mvprintw(y + 1, 58, "        ");
+    refresh();
     wmove(my_win, y, x);
     mvwprintw(info, 1, 9, "%d", editor.num_chars);
     wrefresh(info);

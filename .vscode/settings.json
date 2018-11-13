@@ -1,0 +1,7 @@
+{
+    "files.associations": {
+        "estruturas.h": "c",
+        "stdbool.h": "c",
+        "getopt.h": "c"
+    }
+}
