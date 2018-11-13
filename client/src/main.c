@@ -145,7 +145,7 @@ void verify() {
 }
 void shutdown() {
   char pipe[20];
-  sprintf(pipe, "pipe-%d", getpid());
+  sprintf(pipe, "../pipe-%d", temp.pid);
   unlink(pipe);
   clear();
   printw("Programa terminado!\n");
