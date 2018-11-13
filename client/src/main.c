@@ -69,6 +69,9 @@ void recovery_array(WINDOW *win, char array[MAX_COLUMNS],
   x--;
   y--;
   for (int i = 0; i < MAX_COLUMNS; i++) {
+    if (array[i] == NULL) {
+      array[i] = ' '; // procurar pelo código do espaço
+    }
     content[y][i] = array[i];
     place_in_editor(win, y, i, content[y][i]);
   }
