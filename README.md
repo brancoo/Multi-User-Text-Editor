@@ -17,6 +17,6 @@ Text Editor in C (Unix)
 
 # Bugs / A melhorar
  - Organização do código.
- - Se tentarmos apagar um espaço em branco, o BACKSPACE buga e não consegue apagar nenhum caracter.
- - Implementar no servidor array de estruturas para os clientes para a comunicação entre o servidor e os clientes;
- - Já recupera a 1ª linha de texto do editor, mas existe bug ao recuperar a 2ª linha;
+ - Implementar no servidor array de estruturas para os clientes para a comunicação entre o servidor e os clientes; (preciso para a 3ª meta);
+ - Carregar ficheiro de texto (conteúdo do texto), no lado do servidor;
+ - Login do cliente, completamente funcional.
