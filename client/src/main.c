@@ -284,6 +284,11 @@ int main(int argc, char **argv) {
       }
       break;
     case 10:
+      mvprintw(y + 1, 58, "%s", temp.user);
+      refresh();
+      wmove(my_win, y, x); // Start with cursor in 1 1
+      wrefresh(my_win);
+
       while ((ch = getch()) != 10) {
 
         if (ch == 27) {
