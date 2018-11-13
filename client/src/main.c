@@ -44,8 +44,8 @@ WINDOW *create_win(int height, int width, int starty, int startx) {
 }
 
 void place_in_editor(WINDOW *win, int x, int y, char c) {
-  if (c == '\n')
-    return;
+  /*if (c == '\n')
+    return;*/
 
   x++;
   y++;
@@ -53,6 +53,7 @@ void place_in_editor(WINDOW *win, int x, int y, char c) {
 }
 
 void print_content(WINDOW *win, char content[MAX_LINES][MAX_COLUMNS]) {
+  editor.num_chars = -1;
   for (int i = 0; i < MAX_LINES; i++) {
     for (int j = 0; j < MAX_COLUMNS; j++) {
       if (content[i][j] != NULL) {
@@ -69,7 +70,7 @@ void recovery_array(WINDOW *win, char array[MAX_COLUMNS],
   y--;
   for (int i = 0; i < MAX_COLUMNS; i++) {
     content[y][i] = array[i];
-    // place_in_editor(win, y, i, content[y][x]);
+    place_in_editor(win, y, i, content[y][i]);
   }
 }
 
