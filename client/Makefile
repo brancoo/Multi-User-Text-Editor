@@ -6,7 +6,7 @@ SRC		:= src
 INCLUDE	:= ../include
 LDFLAGS=-pthread
 
-LIBRARIES	:= -lncurses
+LIBRARIES	:= -lncurses -pthread
 
 EXECUTABLE	:= client
 

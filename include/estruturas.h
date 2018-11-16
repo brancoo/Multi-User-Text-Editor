@@ -5,6 +5,11 @@
 #define MEDIT_MAXUSERS 3
 #define PIPE "../main_pipe"
 
+#define SHUTDOWN 1
+#define LOGIN 2
+#define LOGGED 3
+#define NOT_LOGGED 4
+
 typedef struct {
   int x, y;
 } Cursor;

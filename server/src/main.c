@@ -75,15 +75,15 @@ void verify_env_var() {
 void shutdown() {
   char pipe[20];
   int fd;
+  temp.action = SHUTDOWN;
 
   sprintf(pipe, "../pipe-%d", temp.pid);
-  fd = open(pipe, O_WRONLY);
+  fd = open(pipe, O_WRONLY, 0600);
 
-  temp.action = 1;
   write(fd, &temp, sizeof(temp));
   close(fd);
-  printf("Programa terminado\n");
   unlink(PIPE);
+  printf("Programa terminado\n");
   exit(0);
 }
 
@@ -94,22 +94,23 @@ void *receiver() {
 
   mkfifo(PIPE, 0600);
   fd = open(PIPE, O_RDWR);
+
   do {
     read(fd, &receive, sizeof(receive));
     sprintf(pipe, "../pipe-%d", receive.pid);
-    fd_send = open(pipe, O_WRONLY);
+    fd_send = open(pipe, O_WRONLY, 0600);
     switch (receive.action) {
-    case 2:
+    case LOGIN:
       if (find_username(receive.user, "../out/medit.db") == true) {
-        write(fd_send, "Verificado!", strlen("Verificado"));
+        send.action = LOGGED; // LOGIN EFECTUADO COM SUCESSO
         printf("User %s iniciou sessao!\n", receive.user);
       } else {
-        write(fd_send, "Nao encontrado!", strlen("Nao encontrado!"));
+        send.action = NOT_LOGGED; // USERNAME NAO ENCONTRADO NA BASE DE DADOS
       }
-    default:
+      write(fd_send, &send, sizeof(send));
       break;
     }
-  } while (1);
+  } while (stop == 0);
   close(fd);
   pthread_exit(0);
 }
@@ -120,8 +121,8 @@ void SIGhandler(int sig) {
 }
 
 int main(int argc, char *argv[]) {
-  char *file, comando[80], pipe[20], client_pipe[50];
-  int opt, fd_pipe, n_named_pipes, client_fd, res;
+  char *file, comando[80], pipe[20];
+  int opt, fd_pipe, n_named_pipes, res;
   pthread_t thread;
   // fd_pipe, filehandler para o pipe principal
   // opt, serve para ajudar a ler os argumentos opcionais da linha de comandos
@@ -192,6 +193,7 @@ int main(int argc, char *argv[]) {
       cmd(comando);
   }
 
+  pthread_join(thread, NULL);
   close(fd_pipe);
   unlink(PIPE);
 
