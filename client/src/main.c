@@ -19,22 +19,6 @@ Editor editor;
 aux receive;
 int logged = 0;
 
-void load_file(char *filename) {
-  FILE *file = fopen(filename, "r");
-
-  if (file == NULL) {
-    printf("Erro ao carregar ficheiro : %s\n", filename);
-    return;
-  }
-
-  for (int x = 0; x < MAX_LINES; x++) {
-    for (int y = 0; y < MAX_COLUMNS; y++) {
-      fscanf(file, "%c", &editor.content[x][y]);
-    }
-  }
-
-  fclose(file);
-}
 
 WINDOW *create_win(int height, int width, int starty, int startx) {
   WINDOW *local_win = newwin(height, width, starty, startx);
@@ -160,6 +144,7 @@ void *receiver() {
       break;
     case LOGGED: // LOGIN DO CLIENTE COM SUCESSO
       logged = 1;
+      read(fd_pipe, &editor, sizeof(editor));
       break;
     case NOT_LOGGED: // USERNAME NAO ENCONTRADO NA BASE DE DADOS
       printf("Username invalido\n");
@@ -241,7 +226,6 @@ int main(int argc, char **argv) {
   } while (logged == 0);
 
   if (logged == 1) {
-    load_file("../out/text.txt");
     int ch;
     int x = 1;
     int y = 1;
@@ -312,6 +296,9 @@ int main(int argc, char **argv) {
         refresh();
         wmove(my_win, y, x); // Start with cursor in 1 1
         wrefresh(my_win);
+        editor.client.status = true;
+        editor.client.editing_line = y;
+        write(PIPE, &editor, sizeof(editor));
 
         while ((ch = getch()) != 10) {
 
@@ -319,6 +306,8 @@ int main(int argc, char **argv) {
             recovery_array(my_win, s, editor.content, y, x);
             mvprintw(y + 1, 58, "        ");
             refresh();
+            editor.client.status = false;
+            write(PIPE, &editor, sizeof(editor));
             break;
           }
 
@@ -363,6 +352,7 @@ int main(int argc, char **argv) {
       mvwprintw(info, 1, 9, "%d", editor.num_chars);
       wrefresh(info);
       wrefresh(my_win);
+      write(PIPE, &editor, sizeof(editor));
     }
     endwin();
   }
