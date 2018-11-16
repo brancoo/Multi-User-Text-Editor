@@ -136,14 +136,17 @@ void shutdown() {
   char pipe[20];
   sprintf(pipe, "../pipe-%d", getpid());
   unlink(pipe);
-  printf("\nPrograma terminado!\n");
+  clear();
+  printw("Programa terminado!\nPressione qualquer tecla para sair\n");
+  refresh();
   getch();
+  endwin();
   exit(0);
 }
 
 void *receiver() {
   char pipe[20];
-  int fd_pipe, stop = 0;
+  int fd_pipe;
 
   sprintf(pipe, "../pipe-%d", getpid());
   mkfifo(pipe, 0600);
@@ -152,7 +155,7 @@ void *receiver() {
   do {
     read(fd_pipe, &receive, sizeof(receive));
     switch (receive.action) {
-    case SHUTDOWN: // SERVIDOR TERMINOU
+    case SERVER_SHUTDOWN: // SERVIDOR TERMINOU
       shutdown();
       break;
     case LOGGED: // LOGIN DO CLIENTE COM SUCESSO
@@ -162,7 +165,7 @@ void *receiver() {
       printf("Username invalido\n");
       break;
     }
-  } while (stop == 0);
+  } while (1);
   close(fd_pipe);
   unlink(pipe);
   pthread_exit(0);

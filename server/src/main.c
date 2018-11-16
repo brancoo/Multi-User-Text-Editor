@@ -75,8 +75,7 @@ void verify_env_var() {
 void shutdown() {
   char pipe[20];
   int fd;
-  temp.action = SHUTDOWN;
-
+  temp.action = SERVER_SHUTDOWN;
   sprintf(pipe, "../pipe-%d", temp.pid);
   fd = open(pipe, O_WRONLY, 0600);
 
@@ -89,7 +88,7 @@ void shutdown() {
 
 void *receiver() {
   aux receive, send;
-  int fd, fd_send, stop = 0;
+  int fd, fd_send;
   char pipe[20];
 
   mkfifo(PIPE, 0600);
@@ -97,6 +96,7 @@ void *receiver() {
 
   do {
     read(fd, &receive, sizeof(receive));
+    temp.pid = receive.pid;
     sprintf(pipe, "../pipe-%d", receive.pid);
     fd_send = open(pipe, O_WRONLY, 0600);
     switch (receive.action) {
@@ -110,7 +110,7 @@ void *receiver() {
       write(fd_send, &send, sizeof(send));
       break;
     }
-  } while (stop == 0);
+  } while (1);
   close(fd);
   pthread_exit(0);
 }
