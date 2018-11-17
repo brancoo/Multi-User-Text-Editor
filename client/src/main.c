@@ -298,7 +298,7 @@ int main(int argc, char **argv) {
         wrefresh(my_win);
         editor.client.status = true;
         editor.client.editing_line = y;
-        write(PIPE, &editor, sizeof(editor));
+        write(fd, &editor, sizeof(editor));
 
         while ((ch = getch()) != 10) {
 
@@ -307,7 +307,7 @@ int main(int argc, char **argv) {
             mvprintw(y + 1, 58, "        ");
             refresh();
             editor.client.status = false;
-            write(PIPE, &editor, sizeof(editor));
+            write(fd, &editor, sizeof(editor));
             break;
           }
 
@@ -352,7 +352,7 @@ int main(int argc, char **argv) {
       mvwprintw(info, 1, 9, "%d", editor.num_chars);
       wrefresh(info);
       wrefresh(my_win);
-      write(PIPE, &editor, sizeof(editor));
+      write(fd, &editor, sizeof(editor));
     }
     endwin();
   }

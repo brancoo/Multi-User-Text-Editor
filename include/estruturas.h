@@ -31,7 +31,6 @@ typedef struct {
 typedef struct {
   int lines, columns;
   char content[MAX_LINES][MAX_COLUMNS];
-  int screenrows;
   int num_chars;
   int timeout;
   Cursor cursor;

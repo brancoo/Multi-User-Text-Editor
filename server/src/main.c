@@ -66,7 +66,6 @@ void verify_env_var() {
   else {
     getMAX_USERS(editor.lines);
   }
-  editor.screenrows = 0;
   editor.num_chars = 0;
   editor.cursor.x = 4;
   editor.cursor.y = 5;
