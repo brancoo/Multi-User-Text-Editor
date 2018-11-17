@@ -119,8 +119,7 @@ void client_shutdown() {
   char pipe[20];
   sprintf(pipe, "../pipe-%d", getpid());
   unlink(pipe);
-  printf("\nPrograma terminado!\nPressione qualquer tecla para sair");
-  getchar();
+  printf("\nPrograma terminado!\n");
   exit(0);
 }
 
@@ -128,11 +127,11 @@ void server_shutdown() {
   char pipe[20];
   sprintf(pipe, "../pipe-%d", getpid());
   unlink(pipe);
-  printw("\nPrograma terminado!\nPressione qualquer tecla para sair");
-  getch();
+  printw("Programa terminado!\nPressione qualquer tecla para sair");
   refresh();
+  getch();
   endwin();
-  exit(1);
+  exit(0);
 }
 
 void shutdown() {
@@ -199,9 +198,9 @@ int main(int argc, char **argv) {
   int opt, fd, res;
   pthread_t task;
   // fd, file handler para lidar com o pipe
-  // res , para criar a thread do cliente
+  // res ,serve para criar a thread do cliente
+
   signal(SIGINT, SIGhandler);
-  setbuf(stdout, NULL);
 
   // vou buscar o nome de utilizador do cliente
   while ((opt = getopt(argc, argv, "u:p:")) != -1) {
@@ -334,7 +333,6 @@ int main(int argc, char **argv) {
         write(fd, &editor, sizeof(editor));
 
         while ((ch = getch()) != 10) {
-
           if (ch == 27) {
             recovery_array(my_win, s, editor.content, y, x);
             mvprintw(y + 1, 58, "        ");
