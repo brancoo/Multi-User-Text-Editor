@@ -19,7 +19,6 @@ Editor editor;
 aux receive;
 int logged = 0;
 
-
 WINDOW *create_win(int height, int width, int starty, int startx) {
   WINDOW *local_win = newwin(height, width, starty, startx);
   box(local_win, 0, 0);
@@ -116,23 +115,31 @@ void add_char(WINDOW *win, char content[MAX_LINES][MAX_COLUMNS], char c, int x,
     return;
 }
 
-void forced_shutdown() {
+void client_shutdown() {
   char pipe[20];
   sprintf(pipe, "../pipe-%d", getpid());
   unlink(pipe);
-  clear();
-  printw("Programa terminado!\nPressione qualquer tecla para sair");
-  refresh();
-  getch();
-  endwin();
+  printf("\nPrograma terminado!\nPressione qualquer tecla para sair");
+  getchar();
   exit(0);
 }
 
-void shutdown(){
+void server_shutdown() {
+  char pipe[20];
+  sprintf(pipe, "../pipe-%d", getpid());
+  unlink(pipe);
+  printw("\nPrograma terminado!\nPressione qualquer tecla para sair");
+  getch();
+  refresh();
+  endwin();
+  exit(1);
+}
+
+void shutdown() {
   char pipe[20];
   int fd;
   aux send;
-  if(logged == 1){
+  if (logged == 1) {
     send.pid = getpid();
     send.action = CLIENT_SHUTDOWN;
     sprintf(pipe, "../pipe-%d", getpid());
@@ -145,8 +152,8 @@ void shutdown(){
     getch();
     endwin();
     exit(0);
-  }else{
-    forced_shutdown();
+  } else {
+    client_shutdown();
   }
 }
 
@@ -162,7 +169,10 @@ void *receiver() {
     read(fd_pipe, &receive, sizeof(receive));
     switch (receive.action) {
     case SERVER_SHUTDOWN: // SERVIDOR TERMINOU
-      forced_shutdown();
+      clear();
+      printw("O servidor encerrou, a fechar pipe e sair...\n");
+      refresh();
+      server_shutdown();
       break;
     case LOGGED: // LOGIN DO CLIENTE COM SUCESSO
       logged = 1;
@@ -191,6 +201,7 @@ int main(int argc, char **argv) {
   // fd, file handler para lidar com o pipe
   // res , para criar a thread do cliente
   signal(SIGINT, SIGhandler);
+  setbuf(stdout, NULL);
 
   // vou buscar o nome de utilizador do cliente
   while ((opt = getopt(argc, argv, "u:p:")) != -1) {

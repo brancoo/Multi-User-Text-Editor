@@ -127,10 +127,10 @@ void *receiver() {
         send.action = NOT_LOGGED; // USERNAME NAO ENCONTRADO NA BASE DE DADOS
         write(fd_send, &send, sizeof(send));
       }
-      //write(fd_send, &send, sizeof(send));
+      // write(fd_send, &send, sizeof(send));
       break;
-    case CLIENT_SHUTDOWN: 
-      printf("O utilizador %d -> %s saiu do programa!\n", receive.pid, receive.user);
+    case CLIENT_SHUTDOWN:
+      printf("O utilizador com o PID %d saiu do programa!\n", receive.pid);
       break;
     }
   } while (1);
