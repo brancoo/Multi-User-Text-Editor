@@ -10,7 +10,7 @@ Text Editor in C (Unix)
 
 # Meta 2
  - [x] Comunicação através de named piped entre servidor e cliente;
- - [] Gestão dos clientes (detectar que existem, avisar que o servidor encerrou, etc) a funcionar;
+ - [x] Gestão dos clientes (detectar que existem, avisar que o servidor encerrou, etc) a funcionar;
  - [x] Login dos utilizadores a funcionar;
  - [] Lançamento e comunicação com o dicionário preparada, incluindo verificações.
 
@@ -18,4 +18,5 @@ Text Editor in C (Unix)
 # Bugs / A melhorar
  - Organização do código.
  - Implementar no servidor array de estruturas para os clientes para a comunicação entre o servidor e os clientes; (preciso para a 3ª meta);
- - Carregar ficheiro de texto (conteúdo do texto), no lado do servidor;
+ - Timeout quando o utilizador não edita a linha durante x segundos;
+ 
