@@ -19,4 +19,3 @@ Text Editor in C (Unix)
  - Organização do código.
  - Implementar no servidor array de estruturas para os clientes para a comunicação entre o servidor e os clientes; (preciso para a 3ª meta);
  - Carregar ficheiro de texto (conteúdo do texto), no lado do servidor;
- - Login do cliente, completamente funcional.
