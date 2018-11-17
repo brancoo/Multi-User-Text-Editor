@@ -85,7 +85,7 @@ void delete_char(WINDOW *win, char content[MAX_LINES][MAX_COLUMNS], int x,
 
 void add_char(WINDOW *win, char content[MAX_LINES][MAX_COLUMNS], char c, int x,
               int y) {
-  int i, s;
+  int i;
   x--;
   y--;
   i = x; // guardar pos x, da coluna
@@ -116,16 +116,38 @@ void add_char(WINDOW *win, char content[MAX_LINES][MAX_COLUMNS], char c, int x,
     return;
 }
 
-void shutdown() {
+void forced_shutdown() {
   char pipe[20];
   sprintf(pipe, "../pipe-%d", getpid());
   unlink(pipe);
   clear();
-  printw("Programa terminado!\nPressione qualquer tecla para sair\n");
+  printw("Programa terminado!\nPressione qualquer tecla para sair");
   refresh();
   getch();
   endwin();
   exit(0);
+}
+
+void shutdown(){
+  char pipe[20];
+  int fd;
+  aux send;
+  if(logged == 1){
+    send.pid = getpid();
+    send.action = CLIENT_SHUTDOWN;
+    sprintf(pipe, "../pipe-%d", getpid());
+    fd = open(PIPE, O_WRONLY, 0600);
+    write(fd, &send, sizeof(send));
+    unlink(pipe);
+    clear();
+    printw("Programa encerrou!\nPressione qualquer tecla para sair");
+    refresh();
+    getch();
+    endwin();
+    exit(0);
+  }else{
+    forced_shutdown();
+  }
 }
 
 void *receiver() {
@@ -140,7 +162,7 @@ void *receiver() {
     read(fd_pipe, &receive, sizeof(receive));
     switch (receive.action) {
     case SERVER_SHUTDOWN: // SERVIDOR TERMINOU
-      shutdown();
+      forced_shutdown();
       break;
     case LOGGED: // LOGIN DO CLIENTE COM SUCESSO
       logged = 1;

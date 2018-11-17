@@ -71,6 +71,23 @@ void verify_env_var() {
   editor.cursor.y = 5;
 }
 
+void load_file(char *filename) {
+  FILE *file = fopen(filename, "r");
+
+  if (file == NULL) {
+    printf("Erro ao carregar ficheiro : %s\n", filename);
+    return;
+  }
+
+  for (int x = 0; x < MAX_LINES; x++) {
+    for (int y = 0; y < MAX_COLUMNS; y++) {
+      fscanf(file, "%c", &editor.content[x][y]);
+    }
+  }
+
+  fclose(file);
+}
+
 void shutdown() {
   char pipe[20];
   int fd;
@@ -106,38 +123,19 @@ void *receiver() {
         load_file("../out/text.txt");
         write(fd_send, &send, sizeof(send));
         write(fd_send, &editor, sizeof(editor));
-
-        while(1){
-          write(fd_send, &editor, sizeof(editor));
-        }
       } else {
         send.action = NOT_LOGGED; // USERNAME NAO ENCONTRADO NA BASE DE DADOS
         write(fd_send, &send, sizeof(send));
       }
       //write(fd_send, &send, sizeof(send));
       break;
+    case CLIENT_SHUTDOWN: 
+      printf("O utilizador %d -> %s saiu do programa!\n", receive.pid, receive.user);
+      break;
     }
   } while (1);
   close(fd);
   pthread_exit(0);
-}
-
-
-void load_file(char *filename) {
-  FILE *file = fopen(filename, "r");
-
-  if (file == NULL) {
-    printf("Erro ao carregar ficheiro : %s\n", filename);
-    return;
-  }
-
-  for (int x = 0; x < MAX_LINES; x++) {
-    for (int y = 0; y < MAX_COLUMNS; y++) {
-      fscanf(file, "%c", &editor.content[x][y]);
-    }
-  }
-
-  fclose(file);
 }
 
 void SIGhandler(int sig) {

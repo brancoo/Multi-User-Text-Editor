@@ -6,9 +6,10 @@
 #define PIPE "../main_pipe"
 
 #define SERVER_SHUTDOWN 1
-#define LOGIN 2
-#define LOGGED 3
-#define NOT_LOGGED 4
+#define CLIENT_SHUTDOWN 2
+#define LOGIN 3
+#define LOGGED 4
+#define NOT_LOGGED 5
 
 typedef struct {
   int x, y;
