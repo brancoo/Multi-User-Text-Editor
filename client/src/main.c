@@ -18,6 +18,7 @@
 Editor editor;
 aux receive;
 int logged = 0;
+int stop = 0; // variável para sair do SIGALRM
 
 WINDOW *create_win(int height, int width, int starty, int startx) {
   WINDOW *local_win = newwin(height, width, starty, startx);
@@ -192,6 +193,12 @@ void SIGhandler(int sig) {
   shutdown();
 }
 
+void alarmHandler(int sig) {
+  stop = 1;
+  editor.client.status = false;
+  editor.client.editing_line = -1; // NÃO ESTÁ A EDITAR LINHA NENHUMA
+}
+
 int main(int argc, char **argv) {
   aux temp;
   char pipe[20], npipe[20];
@@ -201,6 +208,7 @@ int main(int argc, char **argv) {
   // res ,serve para criar a thread do cliente
 
   signal(SIGINT, SIGhandler);
+  signal(SIGALRM, alarmHandler);
 
   // vou buscar o nome de utilizador do cliente
   while ((opt = getopt(argc, argv, "u:p:")) != -1) {
@@ -270,7 +278,7 @@ int main(int argc, char **argv) {
     keypad(stdscr, TRUE); // para ativar a leitura das setas
     noecho();
 
-    printw("Bem Vindo: %9s\tPress Esc to exit", temp.user);
+    printw("Bem Vindo: %9s\tPress Esc to exit\t", temp.user);
     refresh();
 
     my_win = create_win(HEIGHT, WIDTH, y, x);
@@ -324,6 +332,9 @@ int main(int argc, char **argv) {
         }
         break;
       case 10:
+        mvwprintw(info, 1, 30, "                ");
+        mvwprintw(info, 1, 30, "Modo Edição");
+        wrefresh(info);
         mvprintw(y + 1, 58, "%s", temp.user);
         refresh();
         wmove(my_win, y, x); // Start with cursor in 1 1
@@ -377,6 +388,8 @@ int main(int argc, char **argv) {
           wrefresh(my_win);
         }
       }
+      mvwprintw(info, 1, 30, "Modo Navegação");
+      wrefresh(info);
       mvprintw(y + 1, 58, "        ");
       refresh();
       wmove(my_win, y, x);
