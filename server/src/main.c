@@ -71,37 +71,6 @@ void verify_env_var() {
   editor.cursor.y = 5;
 }
 
-void load_file(char *filename) {
-  FILE *file = fopen(filename, "r");
-
-  if (file == NULL) {
-    printf("Erro ao carregar ficheiro : %s\n", filename);
-    return;
-  }
-
-  for (int x = 0; x < MAX_LINES; x++) {
-    for (int y = 0; y < MAX_COLUMNS; y++) {
-      fscanf(file, "%c", &editor.content[x][y]);
-    }
-  }
-
-  fclose(file);
-}
-
-void shutdown() {
-  char pipe[20];
-  int fd;
-  temp.action = SERVER_SHUTDOWN;
-  sprintf(pipe, "../pipe-%d", temp.pid);
-  fd = open(pipe, O_WRONLY, 0600);
-
-  write(fd, &temp, sizeof(temp));
-  close(fd);
-  unlink(PIPE);
-  printf("Programa terminado\n");
-  exit(0);
-}
-
 void *receiver() {
   aux receive, send;
   int fd, fd_send;
@@ -113,6 +82,7 @@ void *receiver() {
   do {
     read(fd, &receive, sizeof(receive));
     temp.pid = receive.pid;
+    strcpy(temp.user, receive.user);
     sprintf(pipe, "../pipe-%d", receive.pid);
     fd_send = open(pipe, O_WRONLY, 0600);
     switch (receive.action) {
@@ -120,7 +90,7 @@ void *receiver() {
       if (find_username(receive.user, "../out/medit.db") == true) {
         send.action = LOGGED; // LOGIN EFECTUADO COM SUCESSO
         printf("User %s iniciou sessao!\n", receive.user);
-        load_file("../out/text.txt");
+        // load_file("../out/text.txt");
         write(fd_send, &send, sizeof(send));
         write(fd_send, &editor, sizeof(editor));
       } else {
@@ -219,6 +189,7 @@ int main(int argc, char *argv[]) {
   pthread_join(thread, NULL);
   close(fd_pipe);
   unlink(PIPE);
+  free(file);
 
   return 0;
 }

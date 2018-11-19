@@ -17,8 +17,7 @@
 
 Editor editor;
 aux receive;
-int logged = 0;
-int stop = 0; // variável para sair do SIGALRM
+int logged = 0; // para saber se o user se conseguiu logar com sucesso
 
 WINDOW *create_win(int height, int width, int starty, int startx) {
   WINDOW *local_win = newwin(height, width, starty, startx);
@@ -116,6 +115,7 @@ void add_char(WINDOW *win, char content[MAX_LINES][MAX_COLUMNS], char c, int x,
     return;
 }
 
+// caso seja o cliente a fechar em 1º lugar (sem estar loggado)
 void client_shutdown() {
   char pipe[20];
   sprintf(pipe, "../pipe-%d", getpid());
@@ -124,6 +124,7 @@ void client_shutdown() {
   exit(0);
 }
 
+// caso seja o servidor a fechar em 1º lugar
 void server_shutdown() {
   char pipe[20];
   sprintf(pipe, "../pipe-%d", getpid());
@@ -135,6 +136,7 @@ void server_shutdown() {
   exit(0);
 }
 
+// caso o cliente esteja loggado, ele encerra e envia mensagem ao servidor
 void shutdown() {
   char pipe[20];
   int fd;
@@ -193,24 +195,14 @@ void SIGhandler(int sig) {
   shutdown();
 }
 
-void alarmHandler(int sig) {
-  stop = 1;
-  editor.client.status = false;
-  editor.client.editing_line = -1; // NÃO ESTÁ A EDITAR LINHA NENHUMA
-}
-
 int main(int argc, char **argv) {
   aux temp;
   char pipe[20], npipe[20];
   int opt, fd, res;
   pthread_t task;
-  // fd, file handler para lidar com o pipe
-  // res ,serve para criar a thread do cliente
 
   signal(SIGINT, SIGhandler);
-  signal(SIGALRM, alarmHandler);
 
-  // vou buscar o nome de utilizador do cliente
   while ((opt = getopt(argc, argv, "u:p:")) != -1) {
     switch (opt) {
     case 'u':
@@ -278,7 +270,7 @@ int main(int argc, char **argv) {
     keypad(stdscr, TRUE); // para ativar a leitura das setas
     noecho();
 
-    printw("Bem Vindo: %9s\tPress Esc to exit\t", temp.user);
+    printw("Bem Vindo:%s\tPress Esc to exit\t", temp.user);
     refresh();
 
     my_win = create_win(HEIGHT, WIDTH, y, x);
@@ -290,7 +282,7 @@ int main(int argc, char **argv) {
 
     mvwprintw(info, 1, 1, "Chars : ");
     mvwprintw(info, 1, 9, "%d", editor.num_chars);
-
+    mvwprintw(info, 1, 30, "Modo Navegação");
     wrefresh(info);
     for (y = 1; y <= MAX_LINES; y++) {
       x = 49;
@@ -301,7 +293,6 @@ int main(int argc, char **argv) {
     wmove(my_win, y, x); // Start with cursor in 1 1
     refresh();
     wrefresh(my_win);
-
     while ((ch = getch()) != 27) // sai ciclo quando clicar escape
     {
       char s[MAX_COLUMNS];
@@ -337,12 +328,11 @@ int main(int argc, char **argv) {
         wrefresh(info);
         mvprintw(y + 1, 58, "%s", temp.user);
         refresh();
-        wmove(my_win, y, x); // Start with cursor in 1 1
+        wmove(my_win, y, x); // mexer o cursor para a posição actual
         wrefresh(my_win);
         editor.client.status = true;
         editor.client.editing_line = y;
         write(fd, &editor, sizeof(editor));
-
         while ((ch = getch()) != 10) {
           if (ch == 27) {
             recovery_array(my_win, s, editor.content, y, x);

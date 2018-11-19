@@ -1,8 +1,11 @@
 #include "comandos.h"
 #include "main.h"
+#include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 
 bool verify_file_existence(char *file) {
   FILE *f = fopen(file, "r");
@@ -14,20 +17,41 @@ bool verify_file_existence(char *file) {
   }
 }
 
+void shutdown() {
+  char pipe[20];
+  int fd;
+  temp.action = SERVER_SHUTDOWN;
+  sprintf(pipe, "../pipe-%d", temp.pid);
+  fd = open(pipe, O_WRONLY, 0600);
+
+  write(fd, &temp, sizeof(temp));
+  close(fd);
+  unlink(PIPE);
+  printf("Programa terminado\n");
+  exit(0);
+}
+
 void save_settings(char *filename) {
   FILE *f = fopen(filename, "w");
+  int i, j;
   if (f == NULL) {
     printf("Erro com o ficheiro %s\n", filename);
     fclose(f);
     return;
   } else {
-    for (int i = 0; i < editor.lines; i++) {
-      for (int j = 0; j < editor.columns; j++)
+    for (i = 0; i < editor.lines; i++) {
+      for (j = 0; j < editor.columns; j++)
         fprintf(f, "%c", editor.content[i][j]);
     }
-    fprintf(f, "\n");
   }
   fclose(f);
+}
+
+void users() {
+  char pipe[20];
+  sprintf(pipe, "pipe-%d", temp.pid);
+  printf("Utilizador: %s\n", temp.user);
+  printf("Nome do Pipe: %s\n", pipe);
 }
 
 void settings() {
@@ -35,7 +59,31 @@ void settings() {
          "Utilizadores: %d\nNome do Pipe Principal: %s\n",
          editor.lines, editor.columns, max_users, PIPE);
 }
-void load_settings(char *filename) {}
+
+void load_file(char *filename) {
+  FILE *file = fopen(filename, "r");
+
+  if (file == NULL) {
+    printf("Erro ao carregar ficheiro : %s\n", filename);
+    return;
+  }
+
+  for (int x = 0; x < editor.lines; x++) {
+    for (int y = 0; y < editor.columns; y++) {
+      fscanf(file, "%c", &editor.content[x][y]);
+    }
+  }
+  fclose(file);
+}
+
+void text() {
+  for (int i = 0; i < editor.lines; i++) {
+    for (int j = 0; j < editor.columns; j++) {
+      printf("%c", editor.content[i][j]);
+    }
+    printf("\n");
+  }
+}
 
 void cmd(char *com) {
   char **arg = NULL;
@@ -58,7 +106,7 @@ void cmd(char *com) {
   if (strcmp(arg[0], "load") == 0) {
     if (arg[1]) {
       if (verify_file_existence(arg[1]) == 0)
-        load_settings(arg[1]);
+        load_file(arg[1]);
       else {
         printf("Ficheiro nao encontrado!\n");
         return;
@@ -80,20 +128,20 @@ void cmd(char *com) {
     settings();
   else if (strcmp(arg[0], "sair") == 0)
     shutdown();
+  else if (strcmp(arg[0], "users") == 0)
+    users();
+  else if (strcmp(arg[0], "text") == 0)
+    text();
   /*else if (strcmp(arg[0], "free") == 0) {
    if (arg[1])
-     free_row(atoi(arg[1])); // libertar/apagar o conteúdo de determinada
- linha else { printf("Faltam argumentos!\n"); return;
+     free_row(atoi(arg[1])); // libertar/apagar o conteúdo de determinada linha
+  else { printf("Faltam argumentos!\n"); return;
    }
  } else if (strcmp(arg[0], "statistics") == 0)
-   statistics();
- else if (strcmp(arg[0], "users") == 0)
-   users();
- else if (strcmp(arg[0], "text") == 0)
-   text();
+   statistics();*/
   else {
     printf("Comando inválido!\n");
     return;
-  } */
+  }
   free(arg);
 }
