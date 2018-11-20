@@ -130,8 +130,9 @@ void server_shutdown() {
   sprintf(pipe, "../pipe-%d", getpid());
   unlink(pipe);
   printw("Programa terminado!\nPressione qualquer tecla para sair");
-  refresh();
   getch();
+  clear();
+  refresh();
   endwin();
   exit(0);
 }
@@ -149,9 +150,9 @@ void shutdown() {
     write(fd, &send, sizeof(send));
     unlink(pipe);
     clear();
-    printw("Programa encerrou!\nPressione qualquer tecla para sair");
-    refresh();
+    printw("Cliente saiu da sessão!\nPressione qualquer tecla para sair");
     getch();
+    refresh();
     endwin();
     exit(0);
   } else {

@@ -90,7 +90,7 @@ void *receiver() {
       if (find_username(receive.user, "../out/medit.db") == true) {
         send.action = LOGGED; // LOGIN EFECTUADO COM SUCESSO
         printf("User %s iniciou sessao!\n", receive.user);
-        // load_file("../out/text.txt");
+        load_file("../out/text.txt");
         write(fd_send, &send, sizeof(send));
         write(fd_send, &editor, sizeof(editor));
       } else {
