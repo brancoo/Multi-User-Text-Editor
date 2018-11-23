@@ -1,3 +1,6 @@
+#ifndef ESTRUTURAS_H
+#define ESTRUTURAS_H
+
 #include <stdbool.h>
 #define MAX_LINES 15
 #define MAX_COLUMNS 45
@@ -37,3 +40,5 @@ typedef struct {
   Cursor cursor;
   user client;
 } Editor;
+
+#endif
