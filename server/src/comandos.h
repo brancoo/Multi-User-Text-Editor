@@ -5,7 +5,7 @@ void settings();
 bool verify_file_existence(char *file);
 void save_settings(char *filename);
 void free_row(int line);
-void load_settings(char *filename);
+void load_file(char *filename);
 void statistics();
 void users();
 void text();

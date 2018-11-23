@@ -6,6 +6,7 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <sys/unistd.h>
 
 bool verify_file_existence(char *file) {
   FILE *f = fopen(file, "r");
@@ -20,11 +21,12 @@ bool verify_file_existence(char *file) {
 void shutdown() {
   char pipe[20];
   int fd;
-  temp.action = SERVER_SHUTDOWN;
-  sprintf(pipe, "../pipe-%d", temp.pid);
+  Editor send;
+  send.action = SERVER_SHUTDOWN;
+  sprintf(pipe, "../pipe-%d", editor.pid);
   fd = open(pipe, O_WRONLY, 0600);
 
-  write(fd, &temp, sizeof(temp));
+  write(fd, &send, sizeof(send));
   close(fd);
   unlink(PIPE);
   printf("Programa terminado\n");
@@ -49,15 +51,18 @@ void save_settings(char *filename) {
 
 void users() {
   char pipe[20];
-  sprintf(pipe, "pipe-%d", temp.pid);
-  printf("Utilizador: %s\n", temp.user);
+  sprintf(pipe, "pipe-%d", editor.pid);
+
+  system("clear");
+  printf("Utilizador: %s\n", editor.username);
   printf("Nome do Pipe: %s\n", pipe);
 }
 
 void settings() {
+  system("clear");
   printf("Numero de Linhas: %d\nNumero de colunas: %d\nNumero Max. de "
          "Utilizadores: %d\nNome do Pipe Principal: %s\n",
-         editor.lines, editor.columns, max_users, PIPE);
+         editor.lines, editor.columns, editor.max_users, PIPE);
 }
 
 void load_file(char *filename) {
@@ -77,6 +82,8 @@ void load_file(char *filename) {
 }
 
 void text() {
+  system("clear");
+
   for (int i = 0; i < editor.lines; i++) {
     for (int j = 0; j < editor.columns; j++) {
       printf("%c", editor.content[i][j]);

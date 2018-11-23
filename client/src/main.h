@@ -3,8 +3,7 @@
 #define WIDTH 47
 #define HEIGHT 17
 
-aux receive;
-Editor editor;
+Editor receive;
 extern int logged;
 
 void SIGhandler(int sig);

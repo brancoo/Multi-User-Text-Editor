@@ -15,8 +15,7 @@
 #define WIDTH 47
 #define HEIGHT 17
 
-Editor editor;
-aux receive;
+Editor receive;
 int logged = 0; // para saber se o user se conseguiu logar com sucesso
 
 // caso seja o cliente a fechar em 1º lugar (sem estar loggado)
@@ -44,7 +43,7 @@ void server_shutdown() {
 void shutdown() {
   char pipe[20];
   int fd;
-  aux send;
+  Editor send;
   if (logged == 1) {
     send.pid = getpid();
     send.action = CLIENT_SHUTDOWN;
@@ -76,16 +75,19 @@ void *receiver() {
     switch (receive.action) {
     case SERVER_SHUTDOWN: // SERVIDOR TERMINOU
       clear();
-      printw("O servidor encerrou, a fechar pipe e sair...\n");
+      printw("O servidor encerrou!\n");
       refresh();
       server_shutdown();
       break;
     case LOGGED: // LOGIN DO CLIENTE COM SUCESSO
       logged = 1;
-      read(fd_pipe, &editor, sizeof(editor));
+      read(fd_pipe, &receive, sizeof(receive));
       break;
     case NOT_LOGGED: // USERNAME NAO ENCONTRADO NA BASE DE DADOS
       printf("Username invalido\n");
+      break;
+    case MAX_ACTIVE_USERS:
+      printf("Numero maximo de utilizadores activos atingido!\n");
       break;
     }
   } while (1);
@@ -100,7 +102,7 @@ void SIGhandler(int sig) {
 }
 
 int main(int argc, char **argv) {
-  aux temp;
+  Editor temp;
   char pipe[20], npipe[20];
   int opt, fd, res;
   pthread_t task;
@@ -111,7 +113,7 @@ int main(int argc, char **argv) {
     switch (opt) {
     case 'u':
       if (optarg) // vai analisar se -u foi introduzido pelo user e guarda-o
-        strcpy(temp.user, optarg); // FALTA VERIFICAR LOGIN AQUI !!!!
+        strcpy(temp.username, optarg); // FALTA VERIFICAR LOGIN AQUI !!!!
       break;
     case 'p':
       if (optarg) // vai analisar se -p foi introduzido pelo user
@@ -155,7 +157,7 @@ int main(int argc, char **argv) {
 
   do {
     printf("Username:"); // senão existir então é pedido explicitamente
-    scanf("%9s", temp.user);
+    scanf("%9s", temp.username);
     temp.action = LOGIN; // flag LOGIN para o servidor saber o que fazer
     write(fd, &temp, sizeof(temp));
     sleep(1);
@@ -174,7 +176,7 @@ int main(int argc, char **argv) {
     keypad(stdscr, TRUE); // para ativar a leitura das setas
     noecho();
 
-    printw("Bem Vindo:%s\tPress Esc to exit\t", temp.user);
+    printw("Bem Vindo:%s\tPress Esc to exit\t", temp.username);
     refresh();
 
     my_win = create_win(HEIGHT, WIDTH, y, x);
@@ -182,10 +184,10 @@ int main(int argc, char **argv) {
 
     wmove(my_win, y, x);
 
-    print_content(my_win, editor.content);
+    print_content(my_win, receive.content);
 
     mvwprintw(info, 1, 1, "Chars : ");
-    mvwprintw(info, 1, 9, "%d", editor.num_chars);
+    mvwprintw(info, 1, 9, "%d", receive.num_chars);
     mvwprintw(info, 1, 30, "Modo Navegação");
     wrefresh(info);
     for (y = 1; y <= MAX_LINES; y++) {
@@ -201,7 +203,7 @@ int main(int argc, char **argv) {
     {
       char s[MAX_COLUMNS];
       for (int i = 0; i < MAX_COLUMNS; i++) {
-        s[i] = editor.content[y - 1][i];
+        s[i] = receive.content[y - 1][i];
       }
       switch (ch) {
       case KEY_LEFT:
@@ -230,20 +232,20 @@ int main(int argc, char **argv) {
         mvwprintw(info, 1, 30, "                ");
         mvwprintw(info, 1, 30, "Modo Edição");
         wrefresh(info);
-        mvprintw(y + 1, 58, "%s", temp.user);
+        mvprintw(y + 1, 58, "%s", temp.username);
         refresh();
         wmove(my_win, y, x); // mexer o cursor para a posição actual
         wrefresh(my_win);
-        editor.client.status = true;
-        editor.client.editing_line = y;
-        write(fd, &editor, sizeof(editor));
+        receive.status = true;
+        receive.editing_line = y;
+        write(fd, &receive, sizeof(receive));
         while ((ch = getch()) != 10) {
           if (ch == 27) {
-            recovery_array(my_win, s, editor.content, y, x);
+            recovery_array(my_win, s, receive.content, y, x);
             mvprintw(y + 1, 58, "        ");
             refresh();
-            editor.client.status = false;
-            write(fd, &editor, sizeof(editor));
+            receive.status = false;
+            write(fd, &receive, sizeof(receive));
             break;
           }
 
@@ -252,7 +254,8 @@ int main(int argc, char **argv) {
           case KEY_BACKSPACE: // backspace
           case 8:             // delete
           case 127:           // backspace
-            delete_char(my_win, editor.content, x, y);
+            receive.n_chars--;
+            delete_char(my_win, receive.content, x, y);
             break;
 
           case KEY_LEFT:
@@ -271,13 +274,14 @@ int main(int argc, char **argv) {
           case KEY_DOWN:
             break;
           default:
-            add_char(my_win, editor.content, ch, x, y);
+            receive.n_chars++;
+            add_char(my_win, receive.content, ch, x, y);
             if (x < 45) {
               x++;
             }
           }
           wmove(my_win, y, x);
-          mvwprintw(info, 1, 9, "%d", editor.num_chars);
+          mvwprintw(info, 1, 9, "%d", receive.num_chars);
           wrefresh(info);
           wrefresh(my_win);
         }
@@ -287,10 +291,10 @@ int main(int argc, char **argv) {
       mvprintw(y + 1, 58, "        ");
       refresh();
       wmove(my_win, y, x);
-      mvwprintw(info, 1, 9, "%d", editor.num_chars);
+      mvwprintw(info, 1, 9, "%d", receive.num_chars);
       wrefresh(info);
       wrefresh(my_win);
-      write(fd, &editor, sizeof(editor));
+      write(fd, &receive, sizeof(receive));
     }
     endwin();
   }

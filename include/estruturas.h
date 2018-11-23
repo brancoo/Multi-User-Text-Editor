@@ -13,6 +13,7 @@
 #define LOGIN 3
 #define LOGGED 4
 #define NOT_LOGGED 5
+#define MAX_ACTIVE_USERS 6
 
 typedef struct {
   int x, y;
@@ -25,20 +26,18 @@ typedef struct {
 } aux;
 
 typedef struct {
-  char username[8];
-  int pid;
-  bool status;      // modo navegação ou edição
-  int editing_line; // para saber qual a linha que está a editar no momento
-  int n_chars;      // contador para saber quantos caracteres escreveu
-} user;
-
-typedef struct {
   int lines, columns;
   char content[MAX_LINES][MAX_COLUMNS];
   int num_chars;
   int timeout;
+  int max_users;
   Cursor cursor;
-  user client;
+  char username[8];
+  int pid;
+  int action;
+  bool status;      // modo navegação ou edição
+  int editing_line; // para saber qual a linha que está a editar no momento
+  int n_chars;
 } Editor;
 
 #endif

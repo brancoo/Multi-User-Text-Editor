@@ -10,18 +10,18 @@ WINDOW *create_win(int height, int width, int starty, int startx) {
 }
 
 void place_in_editor(WINDOW *win, int x, int y, char c) {
-  x++;
+  x++; // coordenadas do cursor do editor
   y++;
   mvwprintw(win, x, y, "%c", c);
 }
 
 void print_content(WINDOW *win, char content[MAX_LINES][MAX_COLUMNS]) {
-  editor.num_chars = -1;
+  receive.num_chars = -1;
   for (int i = 0; i < MAX_LINES; i++) {
     for (int j = 0; j < MAX_COLUMNS; j++) {
       if (content[i][j] != NULL) {
         place_in_editor(win, i, j, content[i][j]);
-        editor.num_chars++;
+        receive.num_chars++;
       }
     }
   }
@@ -57,7 +57,7 @@ void delete_char(WINDOW *win, char content[MAX_LINES][MAX_COLUMNS], int x,
       }
       place_in_editor(win, y, i, content[y][i]);
     }
-    editor.num_chars--;
+    receive.num_chars--;
   }
 }
 
@@ -89,7 +89,7 @@ void add_char(WINDOW *win, char content[MAX_LINES][MAX_COLUMNS], char c, int x,
     }
     content[y][x] = c; // colocar o caracter que queremos no sitio certo
     place_in_editor(win, y, x, content[y][x]);
-    editor.num_chars++;
+    receive.num_chars++;
   } else
     return;
 }

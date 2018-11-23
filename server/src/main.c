@@ -12,12 +12,19 @@
 #include <unistd.h>
 
 Editor editor;
-aux temp; // estrutura auxiliar para validar login, e para a função shutdown()
-int max_users;
+int active_users;
 
 void getMAX_USERS(int n) {
   srand(time(NULL));
-  max_users = rand() % n;
+  editor.max_users = rand() % n;
+}
+
+bool check_if_users_exceeds_max_active() {
+  if (active_users > editor.max_users) {
+    return false; // ATINGIDO O LIMITE MÁXIMO DE USERS
+  } else {
+    return true; // PODE FAZER LOGIN
+  }
 }
 
 bool find_username(char *username, char *filename) {
@@ -62,7 +69,7 @@ void verify_env_var() {
     editor.timeout = atoi(getenv("MEDIT_TIMEOUT"));
   }
   if (getenv("MEDIT_MAXUSERS") == NULL)
-    max_users = MEDIT_MAXUSERS;
+    editor.max_users = MEDIT_MAXUSERS;
   else {
     getMAX_USERS(editor.lines);
   }
@@ -72,7 +79,7 @@ void verify_env_var() {
 }
 
 void *receiver() {
-  aux receive, send;
+  Editor receive, send;
   int fd, fd_send;
   char pipe[20];
 
@@ -81,18 +88,23 @@ void *receiver() {
 
   do {
     read(fd, &receive, sizeof(receive));
-    temp.pid = receive.pid;
-    strcpy(temp.user, receive.user);
     sprintf(pipe, "../pipe-%d", receive.pid);
     fd_send = open(pipe, O_WRONLY, 0600);
     switch (receive.action) {
     case LOGIN:
-      if (find_username(receive.user, "../out/medit.db") == true) {
-        send.action = LOGGED; // LOGIN EFECTUADO COM SUCESSO
-        printf("User %s iniciou sessao!\n", receive.user);
-        load_file("../out/text.txt");
-        write(fd_send, &send, sizeof(send));
-        write(fd_send, &editor, sizeof(editor));
+      if (find_username(receive.username, "../out/medit.db") == true) {
+        if (check_if_users_exceeds_max_active() == true) {
+          send.action = LOGGED; // LOGIN EFECTUADO COM SUCESSO
+          strcpy(editor.username, receive.username);
+          editor.pid = receive.pid;
+          printf("User %s iniciou sessao!\n", receive.username);
+          load_file("../out/text.txt");
+          write(fd_send, &send, sizeof(send));
+          write(fd_send, &editor, sizeof(editor));
+        } else {
+          send.action = MAX_ACTIVE_USERS;
+          write(fd_send, &send, sizeof(send));
+        }
       } else {
         send.action = NOT_LOGGED; // USERNAME NAO ENCONTRADO NA BASE DE DADOS
         write(fd_send, &send, sizeof(send));
@@ -100,7 +112,7 @@ void *receiver() {
       break;
     case CLIENT_SHUTDOWN:
       printf("O utilizador %d -> %s saiu do programa!\n", receive.pid,
-             receive.user);
+             receive.username);
       break;
     }
   } while (1);
@@ -169,6 +181,8 @@ int main(int argc, char *argv[]) {
     printf("Erro ao abrir pipe. A sair...\n");
     exit(0);
   }
+
+  system("clear"); // LIMPA A CONSOLA
   printf("Servidor iniciado!\n");
 
   // Thread serve para ler duas entradas de dados (comandos e cliente)
