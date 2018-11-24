@@ -243,12 +243,12 @@ int main(int argc, char **argv) {
         receive.status = true;
         receive.editing_line = y;
         write(fd, &receive, sizeof(receive));
-        alarm(receive.timeout);
+        alarm(3);
         while ((ch = getch()) != 10) {
           alarm(0);
-          if (stop == 1)
-            break;
-          if (ch == 27) {
+
+          if (ch == 27 || stop == 1) {
+            stop = 0;
             recovery_array(my_win, s, receive.content, y, x);
             mvprintw(y + 1, 58, "        ");
             refresh();
@@ -292,6 +292,7 @@ int main(int argc, char **argv) {
           mvwprintw(info, 1, 9, "%d", receive.num_chars);
           wrefresh(info);
           wrefresh(my_win);
+          alarm(3);
         }
       }
       mvwprintw(info, 1, 30, "Modo Navegação");

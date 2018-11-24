@@ -5,8 +5,10 @@
 
 Editor receive;
 extern int logged;
+extern int stop;
 
 void SIGhandler(int sig);
+void alarme(int sig);
 int main(int argc, char **argv);
 void *receiver();
 void shutdown();
