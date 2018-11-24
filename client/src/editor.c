@@ -45,7 +45,7 @@ void delete_char(WINDOW *win, char content[MAX_LINES][MAX_COLUMNS], int x,
   x--;
   y--;
 
-  if (content[y][x] == '\0')
+  if (content[y][x] == ' ') // estava '\0'
     return;
   else {
     for (int i = 0; i < MAX_COLUMNS; i++) {

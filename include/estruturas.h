@@ -14,21 +14,16 @@
 #define LOGGED 4
 #define NOT_LOGGED 5
 #define MAX_ACTIVE_USERS 6
+#define UPDATE 7
 
 typedef struct {
   int x, y;
 } Cursor;
 
 typedef struct {
-  char user[8];
-  int pid, action;
-  // action = variavel para ajudar em acções como o SHUTDOWN, ente outras
-} aux;
-
-typedef struct {
   int lines, columns;
   char content[MAX_LINES][MAX_COLUMNS];
-  int num_chars;
+  int num_chars; // numero total de caracteres do editor
   int timeout;
   int max_users;
   Cursor cursor;
@@ -37,7 +32,7 @@ typedef struct {
   int action;
   bool status;      // modo navegação ou edição
   int editing_line; // para saber qual a linha que está a editar no momento
-  int n_chars;
+  int n_chars;      // numero de caracteres que o user adicionou
 } Editor;
 
 #endif

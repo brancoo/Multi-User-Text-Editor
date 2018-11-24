@@ -88,6 +88,8 @@ void *receiver() {
 
   do {
     read(fd, &receive, sizeof(receive));
+    strcpy(editor.username, receive.username);
+    editor.pid = receive.pid;
     sprintf(pipe, "../pipe-%d", receive.pid);
     fd_send = open(pipe, O_WRONLY, 0600);
     switch (receive.action) {
@@ -95,9 +97,8 @@ void *receiver() {
       if (find_username(receive.username, "../out/medit.db") == true) {
         if (check_if_users_exceeds_max_active() == true) {
           send.action = LOGGED; // LOGIN EFECTUADO COM SUCESSO
-          strcpy(editor.username, receive.username);
-          editor.pid = receive.pid;
-          printf("User %s iniciou sessao!\n", receive.username);
+          printf("User %s com o PID %d iniciou sessao!\n", receive.username,
+                 receive.pid);
           load_file("../out/text.txt");
           write(fd_send, &send, sizeof(send));
           write(fd_send, &editor, sizeof(editor));
@@ -111,8 +112,14 @@ void *receiver() {
       }
       break;
     case CLIENT_SHUTDOWN:
-      printf("O utilizador %d -> %s saiu do programa!\n", receive.pid,
-             receive.username);
+      printf("O utilizador com o PID %d saiu do programa!\n", receive.pid);
+      break;
+    case UPDATE:
+      for (int i = 0; i < editor.lines; i++) {
+        for (int j = 0; j < editor.columns; j++) {
+          editor.content[i][j] = receive.content[i][j];
+        }
+      }
       break;
     }
   } while (1);

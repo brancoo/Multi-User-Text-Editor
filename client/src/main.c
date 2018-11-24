@@ -1,5 +1,6 @@
 #include "editor.h"
 #include "estruturas.h"
+#include <ctype.h>
 #include <fcntl.h>
 #include <getopt.h>
 #include <ncurses.h>
@@ -184,14 +185,19 @@ int main(int argc, char **argv) {
     refresh();
 
     my_win = create_win(HEIGHT, WIDTH, y, x);
-    info = create_win(3, WIDTH, HEIGHT + 1, 1);
+    info = create_win(5, WIDTH, HEIGHT + 1, 1);
 
     wmove(my_win, y, x);
 
     print_content(my_win, receive.content);
 
-    mvwprintw(info, 1, 1, "Chars : ");
-    mvwprintw(info, 1, 9, "%d", receive.num_chars);
+    mvwprintw(info, 1, 1, "Editor chars:");
+    mvwprintw(info, 1, 14, "%d", receive.num_chars);
+
+    receive.n_chars = 0;
+    mvwprintw(info, 3, 1, "User chars:");
+    mvwprintw(info, 3, 12, "%d", receive.n_chars);
+
     mvwprintw(info, 1, 30, "Modo Navegação");
     wrefresh(info);
     for (y = 1; y <= MAX_LINES; y++) {
@@ -262,10 +268,10 @@ int main(int argc, char **argv) {
           case KEY_BACKSPACE: // backspace
           case 8:             // delete
           case 127:           // backspace
-            receive.n_chars--;
             delete_char(my_win, receive.content, x, y);
+            receive.num_chars--;
+            receive.n_chars--;
             break;
-
           case KEY_LEFT:
             if (x > 1) {
               x--;
@@ -282,14 +288,16 @@ int main(int argc, char **argv) {
           case KEY_DOWN:
             break;
           default:
-            receive.n_chars++;
             add_char(my_win, receive.content, ch, x, y);
+            receive.n_chars++;
+            receive.num_chars++;
             if (x < 45) {
               x++;
             }
           }
           wmove(my_win, y, x);
-          mvwprintw(info, 1, 9, "%d", receive.num_chars);
+          mvwprintw(info, 1, 14, "%d", receive.num_chars);
+          mvwprintw(info, 3, 12, "%d", receive.n_chars);
           wrefresh(info);
           wrefresh(my_win);
           alarm(3);
@@ -300,9 +308,11 @@ int main(int argc, char **argv) {
       mvprintw(y + 1, 58, "        ");
       refresh();
       wmove(my_win, y, x);
-      mvwprintw(info, 1, 9, "%d", receive.num_chars);
+      mvwprintw(info, 1, 14, "%d", receive.num_chars);
       wrefresh(info);
       wrefresh(my_win);
+
+      receive.action = UPDATE; // envia o conteúdo actualizado para o servidor
       write(fd, &receive, sizeof(receive));
     }
     endwin();
