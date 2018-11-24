@@ -18,5 +18,4 @@ Text Editor in C (Unix)
 # Bugs / A melhorar
  - Organização do código.
  - Implementar no servidor array de estruturas para os clientes para a comunicação entre o servidor e os clientes; (preciso para a 3ª meta);
- - Timeout quando o utilizador não edita a linha durante x segundos;
  - Actualizar em tempo real o conteúdo do editor no lado do servidor;
