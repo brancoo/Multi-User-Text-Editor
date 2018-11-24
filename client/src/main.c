@@ -17,6 +17,7 @@
 
 Editor receive;
 int logged = 0; // para saber se o user se conseguiu logar com sucesso
+int stop = 0;
 
 // caso seja o cliente a fechar em 1º lugar (sem estar loggado)
 void client_shutdown() {
@@ -101,6 +102,8 @@ void SIGhandler(int sig) {
   shutdown();
 }
 
+void alarme(int sig) { stop = 1; }
+
 int main(int argc, char **argv) {
   Editor temp;
   char pipe[20], npipe[20];
@@ -108,7 +111,8 @@ int main(int argc, char **argv) {
   pthread_t task;
 
   signal(SIGINT, SIGhandler);
-
+  signal(SIGALRM, alarme);
+  system("clear");
   while ((opt = getopt(argc, argv, "u:p:")) != -1) {
     switch (opt) {
     case 'u':
@@ -239,7 +243,11 @@ int main(int argc, char **argv) {
         receive.status = true;
         receive.editing_line = y;
         write(fd, &receive, sizeof(receive));
+        alarm(receive.timeout);
         while ((ch = getch()) != 10) {
+          alarm(0);
+          if (stop == 1)
+            break;
           if (ch == 27) {
             recovery_array(my_win, s, receive.content, y, x);
             mvprintw(y + 1, 58, "        ");
