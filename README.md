@@ -19,4 +19,4 @@ Text Editor in C (Unix)
  - Organização do código.
  - Implementar no servidor array de estruturas para os clientes para a comunicação entre o servidor e os clientes; (preciso para a 3ª meta);
  - Timeout quando o utilizador não edita a linha durante x segundos;
- - Quando o servidor termina o server_shutdown() tem um bug (apresenta o nome do cliente na consola depois do getch()).
+ - Actualizar em tempo real o conteúdo do editor no lado do servidor;
