@@ -1,6 +1,7 @@
 #include "editor.h"
 #include "estruturas.h"
 #include <ctype.h>
+#include <curses.h>
 #include <fcntl.h>
 #include <getopt.h>
 #include <ncurses.h>
@@ -177,6 +178,9 @@ int main(int argc, char **argv) {
     WINDOW *info;
 
     initscr();
+    start_color();
+    init_pair(1, COLOR_WHITE, COLOR_RED);
+
     cbreak();
     keypad(stdscr, TRUE); // para ativar a leitura das setas
     noecho();
@@ -242,6 +246,7 @@ int main(int argc, char **argv) {
         mvwprintw(info, 1, 30, "                ");
         mvwprintw(info, 1, 30, "Modo Edição");
         wrefresh(info);
+        attron(COLOR_PAIR(1));
         mvprintw(y + 1, 58, "%s", temp.username);
         refresh();
         wmove(my_win, y, x); // mexer o cursor para a posição actual
@@ -303,6 +308,7 @@ int main(int argc, char **argv) {
           alarm(3);
         }
       }
+      attroff(COLOR_PAIR(1));
       mvwprintw(info, 1, 30, "Modo Navegação");
       wrefresh(info);
       mvprintw(y + 1, 58, "        ");

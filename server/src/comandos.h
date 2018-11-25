@@ -10,3 +10,4 @@ void statistics();
 void users();
 void text();
 void shutdown();
+void initialize_editor_content();

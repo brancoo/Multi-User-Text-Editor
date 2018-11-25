@@ -99,6 +99,7 @@ void *receiver() {
           send.action = LOGGED; // LOGIN EFECTUADO COM SUCESSO
           printf("User %s com o PID %d iniciou sessao!\n", receive.username,
                  receive.pid);
+          initialize_editor_content();
           load_file("../out/text.txt");
           write(fd_send, &send, sizeof(send));
           write(fd_send, &editor, sizeof(editor));

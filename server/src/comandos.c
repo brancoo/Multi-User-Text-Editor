@@ -18,6 +18,14 @@ bool verify_file_existence(char *file) {
   }
 }
 
+// INICIALIZA A MATRIZ DO EDITOR COM ESPAÇOS EM BRANCO
+void initialize_editor_content() {
+  for (int i = 0; i < editor.lines; i++) {
+    for (int j = 0; j < editor.columns; j++)
+      editor.content[i][j] = ' ';
+  }
+}
+
 void shutdown() {
   char pipe[20];
   int fd;
@@ -36,14 +44,17 @@ void shutdown() {
 void save_settings(char *filename) {
   FILE *f = fopen(filename, "w");
   int i, j;
+
   if (f == NULL) {
     printf("Erro com o ficheiro %s\n", filename);
     fclose(f);
     return;
   } else {
     for (i = 0; i < editor.lines; i++) {
-      for (j = 0; j < editor.columns; j++)
+      for (j = 0; j < editor.columns; j++) {
         fprintf(f, "%c", editor.content[i][j]);
+      }
+      fprintf(f, "\n");
     }
   }
   fclose(f);
@@ -85,6 +96,7 @@ void text() {
   system("clear");
 
   for (int i = 0; i < editor.lines; i++) {
+    printf("%d ", i + 1); // FALTAR IMPRIMIR O NOME DO USER
     for (int j = 0; j < editor.columns; j++) {
       printf("%c", editor.content[i][j]);
     }
@@ -124,7 +136,7 @@ void cmd(char *com) {
     }
   } else if (strcmp(arg[0], "save") == 0) {
     if (arg[1])
-      save_settings(arg[1]); // guardar definições em ficheiro .txt
+      save_settings(arg[1]); // ../out/exemplo.txt (exemplo)
     else {
       printf("Faltam argumentos!\n");
       return;

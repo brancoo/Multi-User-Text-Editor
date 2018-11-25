@@ -21,7 +21,8 @@ void print_content(WINDOW *win, char content[MAX_LINES][MAX_COLUMNS]) {
     for (int j = 0; j < MAX_COLUMNS; j++) {
       if (content[i][j] != NULL) {
         place_in_editor(win, i, j, content[i][j]);
-        receive.num_chars++;
+        if (content[i][j] != ' ')
+          receive.num_chars++;
       }
     }
   }

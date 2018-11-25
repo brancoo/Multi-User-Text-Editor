@@ -1,7 +1,6 @@
 #include "estruturas.h"
 
 extern Editor editor;
-extern aux temp;
 extern int active_users;
 
 int main(int argc, char *argv[]);
