@@ -142,6 +142,7 @@ int main(int argc, char *argv[]) {
   // n_named_pipes, numero de named pipes de interação
   // res = auxiliar para criar thread
   signal(SIGINT, SIGhandler);
+  signal(SIGHUP, SIGhandler);
 
   // saber se o admin enviou pela linha de comandos
   while ((opt = getopt(argc, argv, "f:p:n:")) != -1) {

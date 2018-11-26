@@ -113,8 +113,10 @@ int main(int argc, char **argv) {
   pthread_t task;
 
   signal(SIGINT, SIGhandler);
+  signal(SIGHUP, SIGhandler);
   signal(SIGALRM, alarme);
   system("clear");
+
   while ((opt = getopt(argc, argv, "u:p:")) != -1) {
     switch (opt) {
     case 'u':
