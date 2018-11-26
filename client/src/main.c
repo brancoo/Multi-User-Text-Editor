@@ -17,6 +17,8 @@
 #define WIDTH 47
 #define HEIGHT 17
 
+WINDOW *my_win;
+WINDOW *info;
 Editor receive;
 int logged = 0; // para saber se o user se conseguiu logar com sucesso
 int stop = 0;
@@ -91,6 +93,9 @@ void *receiver() {
       break;
     case MAX_ACTIVE_USERS:
       printf("Numero maximo de utilizadores activos atingido!\n");
+      break;
+    case FREE:
+      print_content(my_win, receive.content);
       break;
     }
   } while (1);
@@ -171,160 +176,155 @@ int main(int argc, char **argv) {
     sleep(1);
   } while (logged == 0);
 
-  if (logged == 1) {
-    int ch;
-    int x = 1;
-    int y = 1;
+  int ch;
+  int x = 1;
+  int y = 1;
 
-    WINDOW *my_win;
-    WINDOW *info;
+  initscr();
+  start_color();
+  init_pair(1, COLOR_WHITE, COLOR_RED);
 
-    initscr();
-    start_color();
-    init_pair(1, COLOR_WHITE, COLOR_RED);
+  cbreak();
+  keypad(stdscr, TRUE); // para ativar a leitura das setas
+  noecho();
 
-    cbreak();
-    keypad(stdscr, TRUE); // para ativar a leitura das setas
-    noecho();
+  printw("Bem Vindo:%s\tPress Esc to exit\t", temp.username);
+  refresh();
 
-    printw("Bem Vindo:%s\tPress Esc to exit\t", temp.username);
-    refresh();
+  my_win = create_win(HEIGHT, WIDTH, y, x);
+  info = create_win(5, WIDTH, HEIGHT + 1, 1);
 
-    my_win = create_win(HEIGHT, WIDTH, y, x);
-    info = create_win(5, WIDTH, HEIGHT + 1, 1);
+  wmove(my_win, y, x);
 
-    wmove(my_win, y, x);
+  print_content(my_win, receive.content);
 
-    print_content(my_win, receive.content);
+  mvwprintw(info, 1, 1, "Editor chars:");
+  mvwprintw(info, 1, 14, "%d", receive.num_chars);
 
-    mvwprintw(info, 1, 1, "Editor chars:");
-    mvwprintw(info, 1, 14, "%d", receive.num_chars);
+  receive.n_chars = 0;
+  mvwprintw(info, 3, 1, "User chars:");
+  mvwprintw(info, 3, 12, "%d", receive.n_chars);
 
-    receive.n_chars = 0;
-    mvwprintw(info, 3, 1, "User chars:");
-    mvwprintw(info, 3, 12, "%d", receive.n_chars);
+  mvwprintw(info, 1, 30, "Modo Navegação");
+  wrefresh(info);
+  for (y = 1; y <= MAX_LINES; y++) {
+    x = 49;
+    mvprintw(y + 1, x, "Linha %2d", y);
+  }
+  x = 1;
+  y = 1;
+  wmove(my_win, y, x); // Start with cursor in 1 1
+  refresh();
+  wrefresh(my_win);
+  while ((ch = getch()) != 27) // sai ciclo quando clicar escape
+  {
+    char s[MAX_COLUMNS];
+    for (int i = 0; i < MAX_COLUMNS; i++) {
+      s[i] = receive.content[y - 1][i];
+    }
+    switch (ch) {
+    case KEY_LEFT:
+      if (x > 1) {
+        x--;
+      }
+      break;
+    case KEY_RIGHT:
+      if (x < 45) // colunas
+      {
+        x++;
+      }
+      break;
+    case KEY_UP:
+      if (y > 1) // linhas
+      {
+        y--;
+      }
+      break;
+    case KEY_DOWN:
+      if (y < 15) {
+        y++;
+      }
+      break;
+    case 10:
+      mvwprintw(info, 1, 30, "                ");
+      mvwprintw(info, 1, 30, "Modo Edição");
+      wrefresh(info);
+      attron(COLOR_PAIR(1));
+      mvprintw(y + 1, 58, "%s", temp.username);
+      refresh();
+      wmove(my_win, y, x); // mexer o cursor para a posição actual
+      wrefresh(my_win);
+      receive.status = true;
+      receive.editing_line = y;
+      write(fd, &receive, sizeof(receive));
+      alarm(3);
+      while ((ch = getch()) != 10) {
+        alarm(0);
 
+        if (ch == 27 || stop == 1) {
+          stop = 0;
+          recovery_array(my_win, s, receive.content, y, x);
+          mvprintw(y + 1, 58, "        ");
+          refresh();
+          receive.status = false;
+          write(fd, &receive, sizeof(receive));
+          break;
+        }
+
+        switch (ch) {
+        case KEY_DC:        // delete
+        case KEY_BACKSPACE: // backspace
+        case 8:             // delete
+        case 127:           // backspace
+          delete_char(my_win, receive.content, x, y);
+          receive.num_chars--;
+          receive.n_chars--;
+          break;
+        case KEY_LEFT:
+          if (x > 1) {
+            x--;
+          }
+          break;
+        case KEY_RIGHT:
+          if (x < 45) // colunas
+          {
+            x++;
+          }
+          break;
+        case KEY_UP:
+          break;
+        case KEY_DOWN:
+          break;
+        default:
+          add_char(my_win, receive.content, ch, x, y);
+          receive.n_chars++;
+          receive.num_chars++;
+          if (x < 45) {
+            x++;
+          }
+        }
+        wmove(my_win, y, x);
+        mvwprintw(info, 1, 14, "%d", receive.num_chars);
+        mvwprintw(info, 3, 12, "%d", receive.n_chars);
+        wrefresh(info);
+        wrefresh(my_win);
+        alarm(3);
+      }
+    }
+    attroff(COLOR_PAIR(1));
     mvwprintw(info, 1, 30, "Modo Navegação");
     wrefresh(info);
-    for (y = 1; y <= MAX_LINES; y++) {
-      x = 49;
-      mvprintw(y + 1, x, "Linha %2d", y);
-    }
-    x = 1;
-    y = 1;
-    wmove(my_win, y, x); // Start with cursor in 1 1
+    mvprintw(y + 1, 58, "        ");
     refresh();
+    wmove(my_win, y, x);
+    mvwprintw(info, 1, 14, "%d", receive.num_chars);
+    wrefresh(info);
     wrefresh(my_win);
-    while ((ch = getch()) != 27) // sai ciclo quando clicar escape
-    {
-      char s[MAX_COLUMNS];
-      for (int i = 0; i < MAX_COLUMNS; i++) {
-        s[i] = receive.content[y - 1][i];
-      }
-      switch (ch) {
-      case KEY_LEFT:
-        if (x > 1) {
-          x--;
-        }
-        break;
-      case KEY_RIGHT:
-        if (x < 45) // colunas
-        {
-          x++;
-        }
-        break;
-      case KEY_UP:
-        if (y > 1) // linhas
-        {
-          y--;
-        }
-        break;
-      case KEY_DOWN:
-        if (y < 15) {
-          y++;
-        }
-        break;
-      case 10:
-        mvwprintw(info, 1, 30, "                ");
-        mvwprintw(info, 1, 30, "Modo Edição");
-        wrefresh(info);
-        attron(COLOR_PAIR(1));
-        mvprintw(y + 1, 58, "%s", temp.username);
-        refresh();
-        wmove(my_win, y, x); // mexer o cursor para a posição actual
-        wrefresh(my_win);
-        receive.status = true;
-        receive.editing_line = y;
-        write(fd, &receive, sizeof(receive));
-        alarm(3);
-        while ((ch = getch()) != 10) {
-          alarm(0);
 
-          if (ch == 27 || stop == 1) {
-            stop = 0;
-            recovery_array(my_win, s, receive.content, y, x);
-            mvprintw(y + 1, 58, "        ");
-            refresh();
-            receive.status = false;
-            write(fd, &receive, sizeof(receive));
-            break;
-          }
-
-          switch (ch) {
-          case KEY_DC:        // delete
-          case KEY_BACKSPACE: // backspace
-          case 8:             // delete
-          case 127:           // backspace
-            delete_char(my_win, receive.content, x, y);
-            receive.num_chars--;
-            receive.n_chars--;
-            break;
-          case KEY_LEFT:
-            if (x > 1) {
-              x--;
-            }
-            break;
-          case KEY_RIGHT:
-            if (x < 45) // colunas
-            {
-              x++;
-            }
-            break;
-          case KEY_UP:
-            break;
-          case KEY_DOWN:
-            break;
-          default:
-            add_char(my_win, receive.content, ch, x, y);
-            receive.n_chars++;
-            receive.num_chars++;
-            if (x < 45) {
-              x++;
-            }
-          }
-          wmove(my_win, y, x);
-          mvwprintw(info, 1, 14, "%d", receive.num_chars);
-          mvwprintw(info, 3, 12, "%d", receive.n_chars);
-          wrefresh(info);
-          wrefresh(my_win);
-          alarm(3);
-        }
-      }
-      attroff(COLOR_PAIR(1));
-      mvwprintw(info, 1, 30, "Modo Navegação");
-      wrefresh(info);
-      mvprintw(y + 1, 58, "        ");
-      refresh();
-      wmove(my_win, y, x);
-      mvwprintw(info, 1, 14, "%d", receive.num_chars);
-      wrefresh(info);
-      wrefresh(my_win);
-
-      receive.action = UPDATE; // envia o conteúdo actualizado para o servidor
-      write(fd, &receive, sizeof(receive));
-    }
-    endwin();
+    receive.action = UPDATE; // envia o conteúdo actualizado para o servidor
+    write(fd, &receive, sizeof(receive));
   }
+  endwin();
 
   pthread_join(task, NULL);
   close(fd);

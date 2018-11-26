@@ -15,6 +15,7 @@
 #define NOT_LOGGED 5
 #define MAX_ACTIVE_USERS 6
 #define UPDATE 7
+#define FREE 8
 
 typedef struct {
   int x, y;

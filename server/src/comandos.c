@@ -104,6 +104,11 @@ void text() {
   }
 }
 
+void free_row(char content[][MAX_COLUMNS], int line) {
+  for (int i = 0; i < MAX_COLUMNS; i++)
+    content[line][i] = ' ';
+}
+
 void cmd(char *com) {
   char **arg = NULL;
   char *p = strtok(com, " ");
@@ -118,6 +123,10 @@ void cmd(char *com) {
     p = strtok(NULL, " ");
   }
 
+  int fd;
+  char pipe[20];
+  sprintf(pipe, "../pipe-%d", editor.pid);
+  fd = open(pipe, O_WRONLY);
   /* Realocar um elemento extra para o último NULL */
   arg = realloc(arg, sizeof(char *) * (n_spaces + 1));
   arg[n_spaces] = 0;
@@ -151,13 +160,17 @@ void cmd(char *com) {
     users();
   else if (strcmp(arg[0], "text") == 0)
     text();
-  /*else if (strcmp(arg[0], "free") == 0) {
-   if (arg[1])
-     free_row(atoi(arg[1])); // libertar/apagar o conteúdo de determinada linha
-  else { printf("Faltam argumentos!\n"); return;
-   }
- } else if (strcmp(arg[0], "statistics") == 0)
-   statistics();*/
+  else if (strcmp(arg[0], "free") == 0) {
+    if (arg[1]) {
+      free_row(editor.content, atoi(arg[1]));
+      editor.action = FREE;
+      write(fd, &editor, sizeof(editor));
+    } else {
+      printf("Faltam argumentos!\n");
+      return;
+    }
+  } /*else if (strcmp(arg[0], "statistics") == 0)
+    statistics();*/
   else {
     printf("Comando inválido!\n");
     return;
