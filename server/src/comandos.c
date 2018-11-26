@@ -1,5 +1,6 @@
 #include "comandos.h"
 #include "main.h"
+#include <ctype.h>
 #include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -109,6 +110,28 @@ void free_row(char content[][MAX_COLUMNS], int line) {
     content[line][i] = ' ';
 }
 
+void count_chars(char *aux) {
+  int count = 0;
+  while (*aux) {
+    if (!isspace(*aux++))
+      count++;
+  }
+  printf("Numero de letras:%d\n", count);
+}
+
+void statistics(char array[][MAX_COLUMNS]) {
+  char *p = strtok(array[0], " ");
+  int n_words = 0;
+
+  while (p) {
+    printf("Palavra: %s\n", p);
+    count_chars(p);
+    ++n_words;
+    p = strtok(NULL, " ");
+  }
+  printf("\nTotal de Palavras:%d\n", n_words);
+}
+
 void cmd(char *com) {
   char **arg = NULL;
   char *p = strtok(com, " ");
@@ -169,8 +192,8 @@ void cmd(char *com) {
       printf("Faltam argumentos!\n");
       return;
     }
-  } /*else if (strcmp(arg[0], "statistics") == 0)
-    statistics();*/
+  } else if (strcmp(arg[0], "statistics") == 0)
+    statistics(editor.content);
   else {
     printf("Comando inválido!\n");
     return;
