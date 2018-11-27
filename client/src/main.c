@@ -216,12 +216,16 @@ int main(int argc, char **argv) {
   wmove(my_win, y, x); // Start with cursor in 1 1
   refresh();
   wrefresh(my_win);
+  
   while ((ch = getch()) != 27) // sai ciclo quando clicar escape
   {
     char s[MAX_COLUMNS];
     for (int i = 0; i < MAX_COLUMNS; i++) {
       s[i] = receive.content[y - 1][i];
     }
+
+    int lengh = receive.num_chars;
+
     switch (ch) {
     case KEY_LEFT:
       if (x > 1) {
@@ -267,6 +271,7 @@ int main(int argc, char **argv) {
           mvprintw(y + 1, 58, "        ");
           refresh();
           receive.status = false;
+          receive.num_chars = lengh;
           write(fd, &receive, sizeof(receive));
           break;
         }
@@ -277,8 +282,6 @@ int main(int argc, char **argv) {
         case 8:             // delete
         case 127:           // backspace
           delete_char(my_win, receive.content, x, y);
-          receive.num_chars--;
-          receive.n_chars--;
           break;
         case KEY_LEFT:
           if (x > 1) {
@@ -297,8 +300,6 @@ int main(int argc, char **argv) {
           break;
         default:
           add_char(my_win, receive.content, ch, x, y);
-          receive.n_chars++;
-          receive.num_chars++;
           if (x < 45) {
             x++;
           }

@@ -16,7 +16,7 @@ void place_in_editor(WINDOW *win, int x, int y, char c) {
 }
 
 void print_content(WINDOW *win, char content[MAX_LINES][MAX_COLUMNS]) {
-  receive.num_chars = -1;
+  receive.num_chars = 0;
   for (int i = 0; i < MAX_LINES; i++) {
     for (int j = 0; j < MAX_COLUMNS; j++) {
       if (content[i][j] != NULL) {
@@ -46,19 +46,20 @@ void delete_char(WINDOW *win, char content[MAX_LINES][MAX_COLUMNS], int x,
   x--;
   y--;
 
-  if (content[y][x] == ' ') // estava '\0'
-    return;
-  else {
-    for (int i = 0; i < MAX_COLUMNS; i++) {
-      if (i >= x) {
-        if (content[y][i + 1] == '\n' || content[y][i + 1] == NULL || i == 44) {
-          content[y][i] = ' ';
-        } else
-          content[y][i] = content[y][i + 1];
-      }
-      place_in_editor(win, y, i, content[y][i]);
-    }
+  if (content[y][x] != ' ') {
     receive.num_chars--;
+    if(receive.n_chars > 0)
+    receive.n_chars--;
+  }
+
+  for (int i = 0; i < MAX_COLUMNS; i++) {
+    if (i >= x) {
+      if (content[y][i + 1] == '\n' || content[y][i + 1] == NULL || i == 44) {
+        content[y][i] = ' ';
+      } else
+        content[y][i] = content[y][i + 1];
+    }
+    place_in_editor(win, y, i, content[y][i]);
   }
 }
 
@@ -91,6 +92,7 @@ void add_char(WINDOW *win, char content[MAX_LINES][MAX_COLUMNS], char c, int x,
     content[y][x] = c; // colocar o caracter que queremos no sitio certo
     place_in_editor(win, y, x, content[y][x]);
     receive.num_chars++;
+    receive.n_chars++;
   } else
     return;
 }
