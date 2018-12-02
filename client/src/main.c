@@ -122,22 +122,6 @@ int main(int argc, char **argv) {
   signal(SIGALRM, alarme);
   system("clear");
 
-  while ((opt = getopt(argc, argv, "u:p:")) != -1) {
-    switch (opt) {
-    case 'u':
-      if (optarg) // vai analisar se -u foi introduzido pelo user e guarda-o
-        strcpy(temp.username, optarg); // FALTA VERIFICAR LOGIN AQUI !!!!
-      break;
-    case 'p':
-      if (optarg) // vai analisar se -p foi introduzido pelo user
-        strcpy(pipe, optarg);
-      else { // senão existir argumento opcional, toma o valor por omissão
-        strcpy(pipe, PIPE);
-      }
-      break;
-    }
-  }
-
   temp.pid = getpid();
   sprintf(npipe, "../pipe-%d", temp.pid);
 
@@ -161,20 +145,29 @@ int main(int argc, char **argv) {
     exit(1);
   }
 
-  fd = open(PIPE, O_RDWR); // abrir para leitura/escrita
+  fd = open(PIPE, O_RDWR);
   if (fd == -1) {
     printf("Erro a abrir o pipe do servidor. A sair...\n");
     getch();
     exit(0);
   }
 
-  do {
+  if ((opt = getopt(argc, argv, "u:")) != -1) { // verifica argumento -u
+    if (optarg) { // verifica se introduziu username
+      strcpy(temp.username, optarg);
+      temp.action = LOGIN;
+      write(fd, &temp, sizeof(temp));
+      sleep(1);
+    }
+  }
+
+  while (logged == 0) {
     printf("Username:"); // senão existir então é pedido explicitamente
     scanf("%9s", temp.username);
     temp.action = LOGIN; // flag LOGIN para o servidor saber o que fazer
     write(fd, &temp, sizeof(temp));
     sleep(1);
-  } while (logged == 0);
+  }
 
   int ch;
   int x = 1;
@@ -216,7 +209,7 @@ int main(int argc, char **argv) {
   wmove(my_win, y, x); // Start with cursor in 1 1
   refresh();
   wrefresh(my_win);
-  
+
   while ((ch = getch()) != 27) // sai ciclo quando clicar escape
   {
     char s[MAX_COLUMNS];

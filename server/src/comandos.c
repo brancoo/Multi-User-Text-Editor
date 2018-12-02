@@ -10,12 +10,10 @@
 #include <sys/unistd.h>
 
 bool verify_file_existence(char *file) {
-  FILE *f = fopen(file, "r");
-
-  if (f == NULL) {
-    return 1;
+  if (access(file, F_OK) == 0) {
+    return true; // SE EXISTIR
   } else {
-    return 0;
+    return false; // SE NÃO EXISTIR
   }
 }
 
@@ -132,6 +130,48 @@ void statistics(char array[][MAX_COLUMNS]) {
   printf("\nTotal de Palavras:%d\n", n_words);
 }
 
+void verify_word() {
+  // atos -> aspell to server
+  // stoa -> server to aspell
+  int atos[2], stoa[2], pid;
+  pipe(atos);
+  pipe(stoa);
+  pid = fork();
+  if (pid == 0) {
+    close(0);
+    dup(stoa[0]);
+    close(1);
+    dup(atos[1]);
+    close(stoa[0]);
+    close(stoa[1]);
+    close(atos[0]);
+    close(atos[1]);
+    execlp("aspell", "aspell", "-a", "pt_PT", NULL);
+  }
+  char asp_char;
+
+  // para "limpar" a mensagem inicial do aspell
+  do {
+    read(atos[0], &asp_char, sizeof(asp_char));
+  } while (asp_char != '\n');
+
+  char palavra[50];
+  printf("Palavra a verificar: ");
+  scanf("%s", palavra);
+  strcat(palavra, "\n");
+
+  // envia a palavra para o aspell
+  write(stoa[1], palavra, sizeof(palavra));
+  // aspel retorna um caracter(* -> CERTO || & -> ERRADO)
+  read(atos[0], &asp_char, sizeof(asp_char));
+
+  if (asp_char == '*') {
+    printf("CERTO\n");
+  } else {
+    printf("ERRADO\n");
+  }
+}
+
 void cmd(char *com) {
   char **arg = NULL;
   char *p = strtok(com, " ");
@@ -194,6 +234,8 @@ void cmd(char *com) {
     }
   } else if (strcmp(arg[0], "statistics") == 0)
     statistics(editor.content);
+  else if (strcmp(arg[0], "aspell") == 0)
+    verify_word();
   else {
     printf("Comando inválido!\n");
     return;

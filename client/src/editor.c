@@ -48,8 +48,8 @@ void delete_char(WINDOW *win, char content[MAX_LINES][MAX_COLUMNS], int x,
 
   if (content[y][x] != ' ') {
     receive.num_chars--;
-    if(receive.n_chars > 0)
-    receive.n_chars--;
+    if (receive.n_chars > 0)
+      receive.n_chars--;
   }
 
   for (int i = 0; i < MAX_COLUMNS; i++) {
@@ -91,8 +91,10 @@ void add_char(WINDOW *win, char content[MAX_LINES][MAX_COLUMNS], char c, int x,
     }
     content[y][x] = c; // colocar o caracter que queremos no sitio certo
     place_in_editor(win, y, x, content[y][x]);
-    receive.num_chars++;
-    receive.n_chars++;
+    if (c != ' ') { // NÃO SE CONTAM OS ESPAÇOS INSERIDOS
+      receive.num_chars++;
+      receive.n_chars++;
+    }
   } else
     return;
 }

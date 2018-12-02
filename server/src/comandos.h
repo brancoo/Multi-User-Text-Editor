@@ -12,3 +12,4 @@ void users();
 void text();
 void shutdown();
 void initialize_editor_content();
+void verify_word();

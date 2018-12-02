@@ -134,45 +134,33 @@ void SIGhandler(int sig) {
 }
 
 int main(int argc, char *argv[]) {
-  char *file, comando[80], pipe[20];
-  int opt, fd_pipe, n_named_pipes, res;
+  char file[80], comando[80];
+  int opt, fd_pipe, res;
   pthread_t thread;
   // fd_pipe, filehandler para o pipe principal
   // opt, serve para ajudar a ler os argumentos opcionais da linha de comandos
-  // n_named_pipes, numero de named pipes de interação
   // res = auxiliar para criar thread
   signal(SIGINT, SIGhandler);
   signal(SIGHUP, SIGhandler);
 
-  // saber se o admin enviou pela linha de comandos
-  while ((opt = getopt(argc, argv, "f:p:n:")) != -1) {
-    switch (opt) {
-    case 'f':
-      if (optarg) { // se existir argumento e se o ficheiro existir
-        if (verify_file_existence(argv[2]) == 0)
-          file = argv[2];
-      } else {
+  if ((opt = getopt(argc, argv, "f:")) != -1) {
+    if (optarg) {
+      if (verify_file_existence(argv[2]) == true)
+        strcpy(file, argv[2]);
+      else {
         printf("Base de dados de usernames: ");
         scanf("%s", file);
-        if (verify_file_existence(argv[2]) != 0)
-          file = "../out/medit.db"; // valor por defeito!
+        if (verify_file_existence(argv[2]) == false)
+          strcpy(file, "../out/medit.db");
       }
-      break;
-    case 'p':
-      if (optarg)             // vai analisar se -p foi introduzido pelo user
-        strcpy(pipe, optarg); // copia o valor do argumento para a variável pipe
-      else { // senão existir argumento opcional, toma o valor por omissão
-        strcpy(pipe, PIPE);
-      }
-      break;
-    case 'n':
-      if (optarg)
-        n_named_pipes = atoi(argv[2]);
-      else { // assumimos por defeito, o valor 3 (=MAXUSERS)
-        n_named_pipes = MEDIT_MAXUSERS;
-      }
+    } else {
+      printf("Base de dados de usernames: ");
+      scanf("%s", file);
+      if (verify_file_existence(argv[2]) == false)
+        strcpy(file, "../out/medit.db"); // valor por defeito!
     }
   }
+
   verify_env_var();
 
   if (access(PIPE, F_OK) == 0) { // verifica se já existe o PIPE
@@ -194,7 +182,7 @@ int main(int argc, char *argv[]) {
   system("clear"); // LIMPA A CONSOLA
   printf("Servidor iniciado!\n");
 
-  // Thread serve para ler duas entradas de dados (comandos e cliente)
+  // Thread para auxiliar leitura de dados do cliente
   res = pthread_create(&thread, NULL, &receiver, NULL);
   if (res != 0) {
     perror("ERRO! A criar a thread!!!\n");
@@ -213,6 +201,5 @@ int main(int argc, char *argv[]) {
   close(fd_pipe);
   unlink(PIPE);
   free(file);
-
   return 0;
 }
