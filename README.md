@@ -19,3 +19,4 @@ Text Editor in C (Unix)
  - Organização do código.
  - Implementar no servidor array de estruturas para os clientes para a comunicação entre o servidor e os clientes; (preciso para a 3ª meta);
  - Passar a variável content da estrutura Editor para um array 2D dinâmico.
+ - Contador do nº de caracteres do utilizador está bugado.
