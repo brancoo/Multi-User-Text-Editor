@@ -12,7 +12,8 @@
 #include <unistd.h>
 
 Editor editor;
-int active_users;
+Editor clients[3];
+int active_users = 0;
 
 void getMAX_USERS(int n) {
   srand(time(NULL));
@@ -20,7 +21,7 @@ void getMAX_USERS(int n) {
 }
 
 bool check_if_users_exceeds_max_active() {
-  if (active_users > editor.max_users) {
+  if (active_users >= editor.max_users) {
     return false; // ATINGIDO O LIMITE MÁXIMO DE USERS
   } else {
     return true; // PODE FAZER LOGIN
@@ -78,6 +79,58 @@ void verify_env_var() {
   editor.cursor.y = 5;
 }
 
+void update_all_users() {
+  int fd;
+  char pipe[20];
+
+  for (int i = 0; i < active_users; i++) {
+
+    sprintf(pipe, "../pipe-%d", clients[i].pid);
+    fd = open(pipe, O_WRONLY, 0600);
+
+    write(fd, &editor, sizeof(editor));
+
+    close(fd);
+  }
+}
+
+void add_to_active_users_list(int pid, char username[8]) {
+  clients[active_users].pid = pid;
+  strcpy(clients[active_users].username, username);
+  active_users++;
+}
+
+bool verify_line_edition(Editor aux) {
+  for (int i = 0; i < active_users; i++) {
+    
+    if (clients[i].editing_line == aux.editing_line) {
+      return false;
+    }
+  }
+  printf("DEU\n");
+  return true;
+}
+
+bool check_users_existence(char username[8]) {
+  for (int i = 0; i < active_users; i++) {
+    if (strcmp(username, clients[i].username) == 0) {
+      return false;
+    }
+  }
+  return true;
+}
+
+void delete_user_from_array(int pid) {
+  for (int i = 0; i < active_users; i++) {
+    if (clients[i].pid == pid) {
+      for (int j = i; j < active_users; j++) {
+        clients[j] = clients[j + 1];
+      }
+    }
+  }
+  active_users--;
+}
+
 void *receiver() {
   Editor receive, send;
   int fd, fd_send;
@@ -94,25 +147,38 @@ void *receiver() {
     fd_send = open(pipe, O_WRONLY, 0600);
     switch (receive.action) {
     case LOGIN:
-      if (find_username(receive.username, "../out/medit.db") == true) {
-        if (check_if_users_exceeds_max_active() == true) {
-          send.action = LOGGED; // LOGIN EFECTUADO COM SUCESSO
-          printf("User %s com o PID %d iniciou sessao!\n", receive.username,
-                 receive.pid);
-          initialize_editor_content();
-          load_file("../out/text.txt");
-          write(fd_send, &send, sizeof(send));
-          write(fd_send, &editor, sizeof(editor));
+      printf("numero de users: %d\n", active_users);
+      if (check_users_existence(receive.username) ==
+          true) { // CRIAR OUTRO DEFINE
+        if (find_username(receive.username, "../out/medit.db") == true) {
+
+          if (check_if_users_exceeds_max_active() == true) {
+            add_to_active_users_list(receive.pid, receive.username);
+            send.action = LOGGED; // LOGIN EFECTUADO COM SUCESSO
+            send.editing_line = -1;
+            printf("User %s com o PID %d iniciou sessao!\n", receive.username,
+                   receive.pid);
+            printf("numero de users logados: %d\n", active_users);
+            load_file("../out/text.txt");
+            write(fd_send, &send, sizeof(send));
+            write(fd_send, &editor, sizeof(editor));
+          } else {
+            send.action = MAX_ACTIVE_USERS;
+            write(fd_send, &send, sizeof(send));
+          }
+
         } else {
-          send.action = MAX_ACTIVE_USERS;
+          send.action = NOT_LOGGED; // USERNAME NAO ENCONTRADO NA BASE DE DADOS
           write(fd_send, &send, sizeof(send));
         }
       } else {
-        send.action = NOT_LOGGED; // USERNAME NAO ENCONTRADO NA BASE DE DADOS
+        printf("ja logado\n");
+        send.action = USER_ALREADY_LOGGED; // USERNAME JA LOGADO
         write(fd_send, &send, sizeof(send));
       }
       break;
     case CLIENT_SHUTDOWN:
+      delete_user_from_array(receive.pid);
       printf("O utilizador com o PID %d saiu do programa!\n", receive.pid);
       break;
     case UPDATE:
@@ -121,6 +187,31 @@ void *receiver() {
           editor.content[i][j] = receive.content[i][j];
         }
       }
+      editor.num_chars = receive.num_chars;
+
+      for (int i = 0; i < active_users; i++) {
+        if (clients[i].pid == receive.pid) {
+          clients[i].editing_line = -1;
+        }
+      }
+
+      update_all_users();
+
+      break;
+    case ASK_PERMISSION:
+      if (verify_line_edition(receive) == true) {
+        for (int i = 0; i < active_users; i++) {
+          if (clients[i].pid == receive.pid) {
+            clients[i].editing_line = receive.editing_line;
+          }
+        }
+        receive.status = true;
+        receive.action = PERMISSION_ACCEPTED;
+        printf("DEU 2\n");
+      } else {
+        receive.action = PERMISSION_DENIED;
+      }
+      write(fd_send, &receive, sizeof(receive));
       break;
     }
   } while (1);

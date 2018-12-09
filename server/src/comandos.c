@@ -30,11 +30,14 @@ void shutdown() {
   int fd;
   Editor send;
   send.action = SERVER_SHUTDOWN;
-  sprintf(pipe, "../pipe-%d", editor.pid);
-  fd = open(pipe, O_WRONLY, 0600);
 
-  write(fd, &send, sizeof(send));
-  close(fd);
+  for (int i = 0; i < active_users; i++) {
+    sprintf(pipe, "../pipe-%d", clients[i].pid);
+    fd = open(pipe, O_WRONLY, 0600);
+    write(fd, &send, sizeof(send));
+    close(fd);
+  }
+
   unlink(PIPE);
   printf("Programa terminado\n");
   exit(0);

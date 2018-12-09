@@ -19,8 +19,9 @@
 
 WINDOW *my_win;
 WINDOW *info;
-Editor receive;
+Editor receive, send;
 int logged = 0; // para saber se o user se conseguiu logar com sucesso
+int permiAccepted = 0;
 int stop = 0;
 
 // caso seja o cliente a fechar em 1º lugar (sem estar loggado)
@@ -69,8 +70,8 @@ void shutdown() {
 
 void *receiver() {
   char pipe[20];
-  int fd_pipe;
-
+  int fd_pipe, fd_send;
+  fd_send = open(PIPE, O_WRONLY, 0600);
   sprintf(pipe, "../pipe-%d", getpid());
   mkfifo(pipe, 0600);
 
@@ -93,9 +94,26 @@ void *receiver() {
       break;
     case MAX_ACTIVE_USERS:
       printf("Numero maximo de utilizadores activos atingido!\n");
+
       break;
     case FREE:
       print_content(my_win, receive.content);
+      break;
+    case USER_ALREADY_LOGGED:
+      printf("User ja logado!!\n");
+      break;
+    case UPDATE:
+      print_content(my_win, receive.content);
+      mvwprintw(info, 1, 14, "%d", receive.num_chars);
+      wrefresh(my_win);
+      wrefresh(info);
+
+      break;
+    case PERMISSION_ACCEPTED:
+      permiAccepted = 1;
+      break;
+    case PERMISSION_DENIED:
+      permiAccepted = 0;
       break;
     }
   } while (1);
@@ -243,18 +261,23 @@ int main(int argc, char **argv) {
       }
       break;
     case 10:
-      mvwprintw(info, 1, 30, "                ");
-      mvwprintw(info, 1, 30, "Modo Edição");
-      wrefresh(info);
-      attron(COLOR_PAIR(1));
-      mvprintw(y + 1, 58, "%s", temp.username);
-      refresh();
-      wmove(my_win, y, x); // mexer o cursor para a posição actual
-      wrefresh(my_win);
-      receive.status = true;
+      receive.action = ASK_PERMISSION;
       receive.editing_line = y;
       write(fd, &receive, sizeof(receive));
-      alarm(3);
+
+      if (permiAccepted = 1) {
+        mvwprintw(info, 1, 30, "                ");
+        mvwprintw(info, 1, 30, "Modo Edição");
+        wrefresh(info);
+        attron(COLOR_PAIR(1));
+        mvprintw(y + 1, 58, "%s", temp.username);
+        refresh();
+        wmove(my_win, y, x); // mexer o cursor para a posição actual
+        wrefresh(my_win);
+      } else {
+        break;
+      }
+
       while ((ch = getch()) != 10) {
         alarm(0);
 
@@ -293,6 +316,8 @@ int main(int argc, char **argv) {
           break;
         default:
           add_char(my_win, receive.content, ch, x, y);
+          receive.action = UPDATE;
+          write(fd, &receive, sizeof(receive));
           if (x < 45) {
             x++;
           }
