@@ -87,7 +87,7 @@ void update_all_users() {
 
     sprintf(pipe, "../pipe-%d", clients[i].pid);
     fd = open(pipe, O_WRONLY, 0600);
-
+    editor.action = UPDATE;
     write(fd, &editor, sizeof(editor));
 
     close(fd);
@@ -102,12 +102,12 @@ void add_to_active_users_list(int pid, char username[8]) {
 
 bool verify_line_edition(Editor aux) {
   for (int i = 0; i < active_users; i++) {
-    
-    if (clients[i].editing_line == aux.editing_line) {
+
+    if (clients[i].editing_line == aux.editing_line &&
+        clients[i].status == true) {
       return false;
     }
   }
-  printf("DEU\n");
   return true;
 }
 
@@ -156,6 +156,7 @@ void *receiver() {
             add_to_active_users_list(receive.pid, receive.username);
             send.action = LOGGED; // LOGIN EFECTUADO COM SUCESSO
             send.editing_line = -1;
+            send.status = false;
             printf("User %s com o PID %d iniciou sessao!\n", receive.username,
                    receive.pid);
             printf("numero de users logados: %d\n", active_users);
@@ -191,7 +192,8 @@ void *receiver() {
 
       for (int i = 0; i < active_users; i++) {
         if (clients[i].pid == receive.pid) {
-          clients[i].editing_line = -1;
+          clients[i].editing_line = receive.editing_line;
+          clients[i].status = receive.status;
         }
       }
 
@@ -203,12 +205,12 @@ void *receiver() {
         for (int i = 0; i < active_users; i++) {
           if (clients[i].pid == receive.pid) {
             clients[i].editing_line = receive.editing_line;
+            clients[i].status = true;
           }
         }
-        receive.status = true;
         receive.action = PERMISSION_ACCEPTED;
-        printf("DEU 2\n");
       } else {
+        receive.editing_line = -1;
         receive.action = PERMISSION_DENIED;
       }
       write(fd_send, &receive, sizeof(receive));

@@ -17,6 +17,8 @@
 #define WIDTH 47
 #define HEIGHT 17
 
+int x = 1;
+int y = 1;
 WINDOW *my_win;
 WINDOW *info;
 Editor receive, send;
@@ -105,15 +107,21 @@ void *receiver() {
     case UPDATE:
       print_content(my_win, receive.content);
       mvwprintw(info, 1, 14, "%d", receive.num_chars);
-      wrefresh(my_win);
+
       wrefresh(info);
+
+      wmove(my_win, y, x);
+       refresh();
+      wrefresh(my_win);
 
       break;
     case PERMISSION_ACCEPTED:
       permiAccepted = 1;
+      receive.status = true;
       break;
     case PERMISSION_DENIED:
       permiAccepted = 0;
+      receive.status = false;
       break;
     }
   } while (1);
@@ -188,8 +196,8 @@ int main(int argc, char **argv) {
   }
 
   int ch;
-  int x = 1;
-  int y = 1;
+  // int x = 1;
+  // int y = 1;
 
   initscr();
   start_color();
@@ -286,6 +294,8 @@ int main(int argc, char **argv) {
           recovery_array(my_win, s, receive.content, y, x);
           mvprintw(y + 1, 58, "        ");
           refresh();
+          receive.action = UPDATE;
+          receive.editing_line = -1;
           receive.status = false;
           receive.num_chars = lengh;
           write(fd, &receive, sizeof(receive));
@@ -316,8 +326,6 @@ int main(int argc, char **argv) {
           break;
         default:
           add_char(my_win, receive.content, ch, x, y);
-          receive.action = UPDATE;
-          write(fd, &receive, sizeof(receive));
           if (x < 45) {
             x++;
           }
@@ -327,6 +335,8 @@ int main(int argc, char **argv) {
         mvwprintw(info, 3, 12, "%d", receive.n_chars);
         wrefresh(info);
         wrefresh(my_win);
+        receive.action = UPDATE;
+        write(fd, &receive, sizeof(receive));
         alarm(3);
       }
     }
@@ -339,7 +349,8 @@ int main(int argc, char **argv) {
     mvwprintw(info, 1, 14, "%d", receive.num_chars);
     wrefresh(info);
     wrefresh(my_win);
-
+    receive.editing_line = -1;
+    receive.status = false;
     receive.action = UPDATE; // envia o conteúdo actualizado para o servidor
     write(fd, &receive, sizeof(receive));
   }
