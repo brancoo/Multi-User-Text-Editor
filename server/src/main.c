@@ -79,16 +79,28 @@ void verify_env_var() {
   editor.cursor.y = 5;
 }
 
+updateAllUsersEditor() {
+  for (int i = 0; i < active_users; i++) {
+    for (int j = 0; j < editor.lines; j++) {
+      for (int k = 0; k < editor.columns; k++) {
+        clients[i].content[j][k] = editor.content[j][k];
+        clients[i].action = UPDATE;
+        clients[i].num_chars = editor.num_chars;
+      }
+    }
+  }
+}
+
 void update_all_users() {
   int fd;
   char pipe[20];
-
+  updateAllUsersEditor();
   for (int i = 0; i < active_users; i++) {
 
     sprintf(pipe, "../pipe-%d", clients[i].pid);
     fd = open(pipe, O_WRONLY, 0600);
-    editor.action = UPDATE;
-    write(fd, &editor, sizeof(editor));
+    // editor.action = UPDATE;
+    write(fd, &clients[i], sizeof(clients[i]));
 
     close(fd);
   }
@@ -97,6 +109,8 @@ void update_all_users() {
 void add_to_active_users_list(int pid, char username[8]) {
   clients[active_users].pid = pid;
   strcpy(clients[active_users].username, username);
+  clients[active_users].editing_line = -1;
+  clients[active_users].status = false;
   active_users++;
 }
 
@@ -160,7 +174,7 @@ void *receiver() {
             printf("User %s com o PID %d iniciou sessao!\n", receive.username,
                    receive.pid);
             printf("numero de users logados: %d\n", active_users);
-            load_file("../out/text.txt");
+
             write(fd_send, &send, sizeof(send));
             write(fd_send, &editor, sizeof(editor));
           } else {
@@ -190,10 +204,14 @@ void *receiver() {
       }
       editor.num_chars = receive.num_chars;
 
-      for (int i = 0; i < active_users; i++) {
-        if (clients[i].pid == receive.pid) {
-          clients[i].editing_line = receive.editing_line;
-          clients[i].status = receive.status;
+      if (receive.status == false) {
+
+        for (int i = 0; i < active_users; i++) {
+          if (clients[i].pid == receive.pid) {
+            clients[i].editing_line = receive.editing_line;
+            clients[i].status = receive.status;
+            //printf(" entrou para eliminar ");
+          }
         }
       }
 
@@ -209,11 +227,15 @@ void *receiver() {
           }
         }
         receive.action = PERMISSION_ACCEPTED;
+        receive.status = true;
+        printf(" DEU ask permission \n");
+        write(fd_send, &receive, sizeof(receive));
       } else {
         receive.editing_line = -1;
         receive.action = PERMISSION_DENIED;
+        receive.status = false;
+        write(fd_send, &receive, sizeof(receive));
       }
-      write(fd_send, &receive, sizeof(receive));
       break;
     }
   } while (1);
@@ -271,7 +293,7 @@ int main(int argc, char *argv[]) {
     printf("Erro ao abrir pipe. A sair...\n");
     exit(0);
   }
-
+  load_file("../out/text.txt");
   system("clear"); // LIMPA A CONSOLA
   printf("Servidor iniciado!\n");
 

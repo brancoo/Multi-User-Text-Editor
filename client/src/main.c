@@ -23,7 +23,7 @@ WINDOW *my_win;
 WINDOW *info;
 Editor receive, send;
 int logged = 0; // para saber se o user se conseguiu logar com sucesso
-int permiAccepted = 0;
+int permiAccepted = 2;
 int stop = 0;
 
 // caso seja o cliente a fechar em 1º lugar (sem estar loggado)
@@ -111,17 +111,18 @@ void *receiver() {
       wrefresh(info);
 
       wmove(my_win, y, x);
-       refresh();
+      refresh();
       wrefresh(my_win);
 
       break;
     case PERMISSION_ACCEPTED:
       permiAccepted = 1;
-      receive.status = true;
+      printf("a%da", permiAccepted);
+       read(fd_pipe, &receive, sizeof(receive));
       break;
     case PERMISSION_DENIED:
       permiAccepted = 0;
-      receive.status = false;
+      // read(fd_pipe, &receive, sizeof(receive));
       break;
     }
   } while (1);
@@ -224,7 +225,7 @@ int main(int argc, char **argv) {
   mvwprintw(info, 3, 1, "User chars:");
   mvwprintw(info, 3, 12, "%d", receive.n_chars);
 
-  mvwprintw(info, 1, 30, "Modo Navegação");
+  mvwprintw(info, 1, 31, "Modo Navegação");
   wrefresh(info);
   for (y = 1; y <= MAX_LINES; y++) {
     x = 49;
@@ -235,7 +236,6 @@ int main(int argc, char **argv) {
   wmove(my_win, y, x); // Start with cursor in 1 1
   refresh();
   wrefresh(my_win);
-
   while ((ch = getch()) != 27) // sai ciclo quando clicar escape
   {
     char s[MAX_COLUMNS];
@@ -271,11 +271,17 @@ int main(int argc, char **argv) {
     case 10:
       receive.action = ASK_PERMISSION;
       receive.editing_line = y;
-      write(fd, &receive, sizeof(receive));
 
-      if (permiAccepted = 1) {
-        mvwprintw(info, 1, 30, "                ");
-        mvwprintw(info, 1, 30, "Modo Edição");
+      while (permiAccepted == 2) {
+        write(fd, &receive, sizeof(receive));
+        sleep(1);
+      }
+
+      printf("%d", permiAccepted);
+
+      if (permiAccepted == 1) {
+        mvwprintw(info, 1, 31, "               ");
+        mvwprintw(info, 1, 31, "Modo Edição");
         wrefresh(info);
         attron(COLOR_PAIR(1));
         mvprintw(y + 1, 58, "%s", temp.username);
@@ -294,11 +300,7 @@ int main(int argc, char **argv) {
           recovery_array(my_win, s, receive.content, y, x);
           mvprintw(y + 1, 58, "        ");
           refresh();
-          receive.action = UPDATE;
-          receive.editing_line = -1;
-          receive.status = false;
           receive.num_chars = lengh;
-          write(fd, &receive, sizeof(receive));
           break;
         }
 
@@ -339,9 +341,11 @@ int main(int argc, char **argv) {
         write(fd, &receive, sizeof(receive));
         alarm(3);
       }
+      break;
     }
     attroff(COLOR_PAIR(1));
-    mvwprintw(info, 1, 30, "Modo Navegação");
+    mvwprintw(info, 1, 31, "                ");
+    mvwprintw(info, 1, 31, "Modo Navegação");
     wrefresh(info);
     mvprintw(y + 1, 58, "        ");
     refresh();
@@ -349,6 +353,7 @@ int main(int argc, char **argv) {
     mvwprintw(info, 1, 14, "%d", receive.num_chars);
     wrefresh(info);
     wrefresh(my_win);
+    permiAccepted = 2;
     receive.editing_line = -1;
     receive.status = false;
     receive.action = UPDATE; // envia o conteúdo actualizado para o servidor
