@@ -98,9 +98,6 @@ void *receiver() {
       printf("Numero maximo de utilizadores activos atingido!\n");
 
       break;
-    case FREE:
-      print_content(my_win, receive.content);
-      break;
     case USER_ALREADY_LOGGED:
       printf("User ja logado!!\n");
       break;
@@ -118,11 +115,9 @@ void *receiver() {
     case PERMISSION_ACCEPTED:
       permiAccepted = 1;
       printf("a%da", permiAccepted);
-       read(fd_pipe, &receive, sizeof(receive));
       break;
     case PERMISSION_DENIED:
       permiAccepted = 0;
-      // read(fd_pipe, &receive, sizeof(receive));
       break;
     }
   } while (1);
@@ -272,10 +267,10 @@ int main(int argc, char **argv) {
       receive.action = ASK_PERMISSION;
       receive.editing_line = y;
 
-      while (permiAccepted == 2) {
+      //while (permiAccepted == 2) {
         write(fd, &receive, sizeof(receive));
         sleep(1);
-      }
+      //}
 
       printf("%d", permiAccepted);
 

@@ -210,7 +210,7 @@ void *receiver() {
           if (clients[i].pid == receive.pid) {
             clients[i].editing_line = receive.editing_line;
             clients[i].status = receive.status;
-            //printf(" entrou para eliminar ");
+
           }
         }
       }

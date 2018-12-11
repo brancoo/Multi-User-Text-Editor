@@ -15,11 +15,10 @@
 #define NOT_LOGGED 5
 #define MAX_ACTIVE_USERS 6
 #define UPDATE 7
-#define FREE 8
-#define ASK_PERMISSION 9
-#define PERMISSION_ACCEPTED 10
-#define PERMISSION_DENIED 11
-#define USER_ALREADY_LOGGED 12
+#define ASK_PERMISSION 8
+#define PERMISSION_ACCEPTED 9
+#define PERMISSION_DENIED 10
+#define USER_ALREADY_LOGGED 11
 
 typedef struct {
   int x, y;

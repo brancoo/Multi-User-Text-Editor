@@ -108,7 +108,10 @@ void text() {
 
 void free_row(char content[][MAX_COLUMNS], int line) {
   for (int i = 0; i < MAX_COLUMNS; i++)
+  if(content[line][i] != ' '){
     content[line][i] = ' ';
+    editor.num_chars--;
+  }
 }
 
 void count_chars(char *aux) {
@@ -229,8 +232,9 @@ void cmd(char *com) {
   else if (strcmp(arg[0], "free") == 0) {
     if (arg[1]) {
       free_row(editor.content, atoi(arg[1]));
-      editor.action = FREE;
-      write(fd, &editor, sizeof(editor));
+      editor.action = UPDATE;
+      update_all_users();
+      //write(fd, &editor, sizeof(editor));
     } else {
       printf("Faltam argumentos!\n");
       return;
