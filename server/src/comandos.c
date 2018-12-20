@@ -108,10 +108,10 @@ void text() {
 
 void free_row(char content[][MAX_COLUMNS], int line) {
   for (int i = 0; i < MAX_COLUMNS; i++)
-  if(content[line][i] != ' '){
-    content[line][i] = ' ';
-    editor.num_chars--;
-  }
+    if (content[line][i] != ' ') {
+      content[line][i] = ' ';
+      editor.num_chars--;
+    }
 }
 
 void count_chars(char *aux) {
@@ -123,8 +123,8 @@ void count_chars(char *aux) {
   printf("Numero de letras:%d\n", count);
 }
 
-void statistics(char array[][MAX_COLUMNS]) {
-  char *p = strtok(array[0], " ");
+void statistics() {
+  char *p = strtok(editor.content[0], " ");
   int n_words = 0;
 
   while (p) {
@@ -134,6 +134,7 @@ void statistics(char array[][MAX_COLUMNS]) {
     p = strtok(NULL, " ");
   }
   printf("\nTotal de Palavras:%d\n", n_words);
+  free(p);
 }
 
 void verify_word() {
@@ -192,10 +193,7 @@ void cmd(char *com) {
     p = strtok(NULL, " ");
   }
 
-  int fd;
-  char pipe[20];
-  sprintf(pipe, "../pipe-%d", editor.pid);
-  fd = open(pipe, O_WRONLY);
+  
   /* Realocar um elemento extra para o último NULL */
   arg = realloc(arg, sizeof(char *) * (n_spaces + 1));
   arg[n_spaces] = 0;
@@ -234,13 +232,13 @@ void cmd(char *com) {
       free_row(editor.content, atoi(arg[1]));
       editor.action = UPDATE;
       update_all_users();
-      //write(fd, &editor, sizeof(editor));
+      // write(fd, &editor, sizeof(editor));
     } else {
       printf("Faltam argumentos!\n");
       return;
     }
   } else if (strcmp(arg[0], "statistics") == 0)
-    statistics(editor.content);
+    statistics();
   else if (strcmp(arg[0], "aspell") == 0)
     verify_word();
   else {

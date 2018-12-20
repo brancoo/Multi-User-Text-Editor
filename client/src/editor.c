@@ -48,8 +48,9 @@ void delete_char(WINDOW *win, char content[MAX_LINES][MAX_COLUMNS], int x,
 
   if (content[y][x] != ' ') {
     receive.num_chars--;
-    if (receive.n_chars > 0)
+    if (receive.n_chars > 0) {
       receive.n_chars--;
+    }
   }
 
   for (int i = 0; i < MAX_COLUMNS; i++) {
@@ -65,6 +66,7 @@ void delete_char(WINDOW *win, char content[MAX_LINES][MAX_COLUMNS], int x,
 
 void add_char(WINDOW *win, char content[MAX_LINES][MAX_COLUMNS], char c, int x,
               int y) {
+
   int i;
   x--;
   y--;

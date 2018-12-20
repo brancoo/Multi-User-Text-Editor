@@ -114,7 +114,6 @@ void *receiver() {
       break;
     case PERMISSION_ACCEPTED:
       permiAccepted = 1;
-      printf("a%da", permiAccepted);
       break;
     case PERMISSION_DENIED:
       permiAccepted = 0;
@@ -192,6 +191,7 @@ int main(int argc, char **argv) {
   }
 
   int ch;
+  receive.n_chars = 0;
   // int x = 1;
   // int y = 1;
 
@@ -237,7 +237,7 @@ int main(int argc, char **argv) {
     for (int i = 0; i < MAX_COLUMNS; i++) {
       s[i] = receive.content[y - 1][i];
     }
-
+    int numUserChar = 0;
     int lengh = receive.num_chars;
 
     switch (ch) {
@@ -264,15 +264,14 @@ int main(int argc, char **argv) {
       }
       break;
     case 10:
+      numUserChar = receive.n_chars;
       receive.action = ASK_PERMISSION;
       receive.editing_line = y;
 
-      //while (permiAccepted == 2) {
-        write(fd, &receive, sizeof(receive));
-        sleep(1);
-      //}
+      write(fd, &receive, sizeof(receive));
 
-      printf("%d", permiAccepted);
+      while (permiAccepted == 2)
+        ;
 
       if (permiAccepted == 1) {
         mvwprintw(info, 1, 31, "               ");
@@ -288,14 +287,16 @@ int main(int argc, char **argv) {
       }
 
       while ((ch = getch()) != 10) {
-        alarm(0);
+        // alarm(0);
 
-        if (ch == 27 || stop == 1) {
-          stop = 0;
+        if (ch == 27) {
+          // stop = 0;
           recovery_array(my_win, s, receive.content, y, x);
           mvprintw(y + 1, 58, "        ");
           refresh();
           receive.num_chars = lengh;
+          receive.n_chars = numUserChar;
+
           break;
         }
 
@@ -326,6 +327,7 @@ int main(int argc, char **argv) {
           if (x < 45) {
             x++;
           }
+          break;
         }
         wmove(my_win, y, x);
         mvwprintw(info, 1, 14, "%d", receive.num_chars);
@@ -334,9 +336,8 @@ int main(int argc, char **argv) {
         wrefresh(my_win);
         receive.action = UPDATE;
         write(fd, &receive, sizeof(receive));
-        alarm(3);
+        // alarm(3);
       }
-      break;
     }
     attroff(COLOR_PAIR(1));
     mvwprintw(info, 1, 31, "                ");
@@ -346,6 +347,7 @@ int main(int argc, char **argv) {
     refresh();
     wmove(my_win, y, x);
     mvwprintw(info, 1, 14, "%d", receive.num_chars);
+    mvwprintw(info, 3, 12, "%d", receive.n_chars);
     wrefresh(info);
     wrefresh(my_win);
     permiAccepted = 2;

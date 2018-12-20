@@ -12,8 +12,9 @@
 #include <unistd.h>
 
 Editor editor;
-Editor clients[3];
+Editor clients[MEDIT_MAXUSERS];
 int active_users = 0;
+pthread_mutex_t lock;
 
 void getMAX_USERS(int n) {
   srand(time(NULL));
@@ -79,7 +80,7 @@ void verify_env_var() {
   editor.cursor.y = 5;
 }
 
-updateAllUsersEditor() {
+void updateAllUsersEditor() {
   for (int i = 0; i < active_users; i++) {
     for (int j = 0; j < editor.lines; j++) {
       for (int k = 0; k < editor.columns; k++) {
@@ -91,18 +92,20 @@ updateAllUsersEditor() {
   }
 }
 
-void update_all_users() {
+void update_all_users(int pid) {
   int fd;
   char pipe[20];
   updateAllUsersEditor();
   for (int i = 0; i < active_users; i++) {
+    if(clients[i].pid != pid){
 
     sprintf(pipe, "../pipe-%d", clients[i].pid);
     fd = open(pipe, O_WRONLY, 0600);
-    // editor.action = UPDATE;
-    write(fd, &clients[i], sizeof(clients[i]));
+    clients[i].action = UPDATE;
+        write(fd, &clients[i], sizeof(clients[i]));
 
     close(fd);
+  }
   }
 }
 
@@ -210,13 +213,12 @@ void *receiver() {
           if (clients[i].pid == receive.pid) {
             clients[i].editing_line = receive.editing_line;
             clients[i].status = receive.status;
-
           }
         }
       }
-
-      update_all_users();
-
+      pthread_mutex_lock(&lock);
+      update_all_users(receive.pid);
+      pthread_mutex_unlock(&lock);
       break;
     case ASK_PERMISSION:
       if (verify_line_edition(receive) == true) {
@@ -298,6 +300,11 @@ int main(int argc, char *argv[]) {
   printf("Servidor iniciado!\n");
 
   // Thread para auxiliar leitura de dados do cliente
+  if (pthread_mutex_init(&lock, NULL) != 0) {
+    printf("Mutex init failed!\n");
+    exit(1);
+  }
+
   res = pthread_create(&thread, NULL, &receiver, NULL);
   if (res != 0) {
     perror("ERRO! A criar a thread!!!\n");
@@ -313,6 +320,7 @@ int main(int argc, char *argv[]) {
   }
 
   pthread_join(thread, NULL);
+  pthread_mutex_destroy(&lock);
   close(fd_pipe);
   unlink(PIPE);
   free(file);
