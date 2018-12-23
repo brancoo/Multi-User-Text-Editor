@@ -90,6 +90,9 @@ void *receiver() {
     case LOGGED: // LOGIN DO CLIENTE COM SUCESSO
       logged = 1;
       read(fd_pipe, &receive, sizeof(receive));
+      for (int i = 0; i < MAX_LINES; i++) {
+        printf("%s\n", receive.userEdit[i]);
+      }
       break;
     case NOT_LOGGED: // USERNAME NAO ENCONTRADO NA BASE DE DADOS
       printf("Username invalido\n");
@@ -104,11 +107,27 @@ void *receiver() {
     case UPDATE:
       print_content(my_win, receive.content);
       mvwprintw(info, 1, 14, "%d", receive.num_chars);
-
       wrefresh(info);
 
+      for (int i = 0; i < MAX_LINES; i++) {
+        if (strcmp(receive.userEdit[i], "        ") == 0) {
+          attroff(COLOR_PAIR(1));
+          mvprintw(i + 2, 58, "%s", receive.userEdit[i]);
+          refresh();
+        } else {
+          attron(COLOR_PAIR(1));
+          mvprintw(i + 2, 58, "%s", receive.userEdit[i]);
+          refresh();
+        }
+      }
+
+      /*for (int i = 0; i < MAX_LINES; i++) {
+        attron(COLOR_PAIR(1));
+        mvprintw(i + 2, 58, "%s", receive.userEdit[i]);
+        refresh();
+      }*/
+
       wmove(my_win, y, x);
-      refresh();
       wrefresh(my_win);
 
       break;
@@ -226,6 +245,13 @@ int main(int argc, char **argv) {
     x = 49;
     mvprintw(y + 1, x, "Linha %2d", y);
   }
+
+  for (int i = 0; i < MAX_LINES; i++) {
+    attron(COLOR_PAIR(1));
+    mvprintw(i + 2, 58, receive.userEdit[i]);
+    refresh();
+  }
+
   x = 1;
   y = 1;
   wmove(my_win, y, x); // Start with cursor in 1 1

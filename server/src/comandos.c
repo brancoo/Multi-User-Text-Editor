@@ -134,6 +134,13 @@ void statistics() {
     p = strtok(NULL, " ");
   }
   printf("\nTotal de Palavras:%d\n", n_words);
+
+  for (int i = 0; i < active_users; i++) {
+    if (clients[i].status == true) {
+      printf("Linha %d esta a ser editada pelo cliente %s.\n",
+             clients[i].editing_line, clients[i].username);
+    }
+  }
   free(p);
 }
 
@@ -193,7 +200,6 @@ void cmd(char *com) {
     p = strtok(NULL, " ");
   }
 
-  
   /* Realocar um elemento extra para o último NULL */
   arg = realloc(arg, sizeof(char *) * (n_spaces + 1));
   arg[n_spaces] = 0;

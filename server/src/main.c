@@ -82,11 +82,13 @@ void verify_env_var() {
 
 void updateAllUsersEditor() {
   for (int i = 0; i < active_users; i++) {
+    clients[i].action = UPDATE;
+    clients[i].num_chars = editor.num_chars;
     for (int j = 0; j < editor.lines; j++) {
+      strcpy(clients[i].userEdit[j], editor.userEdit[j]);
+      //strcpy(clients[i].userEdit[j], "        ");
       for (int k = 0; k < editor.columns; k++) {
         clients[i].content[j][k] = editor.content[j][k];
-        clients[i].action = UPDATE;
-        clients[i].num_chars = editor.num_chars;
       }
     }
   }
@@ -97,15 +99,15 @@ void update_all_users(int pid) {
   char pipe[20];
   updateAllUsersEditor();
   for (int i = 0; i < active_users; i++) {
-    if(clients[i].pid != pid){
+    if (clients[i].pid != pid) {
 
-    sprintf(pipe, "../pipe-%d", clients[i].pid);
-    fd = open(pipe, O_WRONLY, 0600);
-    clients[i].action = UPDATE;
-        write(fd, &clients[i], sizeof(clients[i]));
+      sprintf(pipe, "../pipe-%d", clients[i].pid);
+      fd = open(pipe, O_WRONLY, 0600);
+      clients[i].action = UPDATE;
+      write(fd, &clients[i], sizeof(clients[i]));
 
-    close(fd);
-  }
+      close(fd);
+    }
   }
 }
 
@@ -149,6 +151,8 @@ void delete_user_from_array(int pid) {
 }
 
 void *receiver() {
+  pthread_mutex_lock(&lock);
+
   Editor receive, send;
   int fd, fd_send;
   char pipe[20];
@@ -194,10 +198,14 @@ void *receiver() {
         send.action = USER_ALREADY_LOGGED; // USERNAME JA LOGADO
         write(fd_send, &send, sizeof(send));
       }
+      pthread_mutex_unlock(&lock);
+
       break;
     case CLIENT_SHUTDOWN:
       delete_user_from_array(receive.pid);
       printf("O utilizador com o PID %d saiu do programa!\n", receive.pid);
+      pthread_mutex_unlock(&lock);
+
       break;
     case UPDATE:
       for (int i = 0; i < editor.lines; i++) {
@@ -215,10 +223,25 @@ void *receiver() {
             clients[i].status = receive.status;
           }
         }
+        for (int i = 0; i < MAX_LINES; i++) {
+          if (strcmp(receive.userEdit[i], receive.username) == 0) {
+            printf("vai retirar linha!!\n");
+            strcpy(editor.userEdit[i], "        ");
+            strcpy(receive.userEdit[i], "        ");
+          }
+        }
       }
-      pthread_mutex_lock(&lock);
+
+      for (int i = 0; i < MAX_LINES; i++) {
+        printf("%d\n", i);
+        printf("%s\n", receive.userEdit[i]);
+        printf("%s\n", editor.userEdit[i]);
+      }
+      // pthread_mutex_lock(&lock);
       update_all_users(receive.pid);
+      // pthread_mutex_unlock(&lock);
       pthread_mutex_unlock(&lock);
+
       break;
     case ASK_PERMISSION:
       if (verify_line_edition(receive) == true) {
@@ -228,9 +251,18 @@ void *receiver() {
             clients[i].status = true;
           }
         }
+        strcpy(receive.userEdit[receive.editing_line - 1], receive.username);
+        strcpy(editor.userEdit[receive.editing_line - 1], receive.username);
+
+        for (int i = 0; i < MAX_LINES; i++) {
+          printf("%d\n", i);
+          printf("%s\n", receive.userEdit[i]);
+        }
         receive.action = PERMISSION_ACCEPTED;
         receive.status = true;
+
         printf(" DEU ask permission \n");
+
         write(fd_send, &receive, sizeof(receive));
       } else {
         receive.editing_line = -1;
@@ -238,6 +270,9 @@ void *receiver() {
         receive.status = false;
         write(fd_send, &receive, sizeof(receive));
       }
+      update_all_users(receive.pid);
+      pthread_mutex_unlock(&lock);
+
       break;
     }
   } while (1);

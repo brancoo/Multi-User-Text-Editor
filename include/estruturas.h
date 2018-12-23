@@ -32,6 +32,7 @@ typedef struct {
   int max_users;
   Cursor cursor;
   char username[8];
+  char userEdit[MAX_LINES][8];
   int pid;
   int action;
   bool status;      // modo navegação ou edição
