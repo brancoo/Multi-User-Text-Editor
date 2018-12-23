@@ -259,6 +259,20 @@ int main(int argc, char **argv) {
   wrefresh(my_win);
   while ((ch = getch()) != 27) // sai ciclo quando clicar escape
   {
+    /*for (int i = 0; i < MAX_LINES; i++) {
+      if (strcmp(receive.userEdit[i], "        ") == 0) {
+        attroff(COLOR_PAIR(1));
+        mvprintw(i + 2, 58, "%s", receive.userEdit[i]);
+        refresh();
+      } else {
+        attron(COLOR_PAIR(1));
+        mvprintw(i + 2, 58, "%s", receive.userEdit[i]);
+        refresh();
+      }
+    }
+    wmove(my_win, y, x); // Start with cursor in 1 1
+    refresh();
+    wrefresh(my_win);*/
     char s[MAX_COLUMNS];
     for (int i = 0; i < MAX_COLUMNS; i++) {
       s[i] = receive.content[y - 1][i];
@@ -369,8 +383,12 @@ int main(int argc, char **argv) {
     mvwprintw(info, 1, 31, "                ");
     mvwprintw(info, 1, 31, "Modo Navegação");
     wrefresh(info);
-    mvprintw(y + 1, 58, "        ");
-    refresh();
+    if (receive.status == true) {
+      attroff(COLOR_PAIR(1));
+      mvprintw(y + 1, 58, "        ");
+      refresh();
+    }
+
     wmove(my_win, y, x);
     mvwprintw(info, 1, 14, "%d", receive.num_chars);
     mvwprintw(info, 3, 12, "%d", receive.n_chars);
