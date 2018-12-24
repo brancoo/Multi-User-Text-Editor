@@ -86,7 +86,6 @@ void updateAllUsersEditor() {
     clients[i].num_chars = editor.num_chars;
     for (int j = 0; j < editor.lines; j++) {
       strcpy(clients[i].userEdit[j], editor.userEdit[j]);
-      //strcpy(clients[i].userEdit[j], "        ");
       for (int k = 0; k < editor.columns; k++) {
         clients[i].content[j][k] = editor.content[j][k];
       }
@@ -94,7 +93,7 @@ void updateAllUsersEditor() {
   }
 }
 
-void update_all_users(int pid) {
+void update_all_other_users(int pid) {
   int fd;
   char pipe[20];
   updateAllUsersEditor();
@@ -111,10 +110,27 @@ void update_all_users(int pid) {
   }
 }
 
+void update_all_users() {
+  int fd;
+  char pipe[20];
+  updateAllUsersEditor();
+     for (int i = 0; i < MAX_LINES; i++) {
+        printf("%d\n", i);
+        printf("%s\n", editor.userEdit[i]);
+      }
+  for (int i = 0; i < active_users; i++) {
+    sprintf(pipe, "../pipe-%d", clients[i].pid);
+    fd = open(pipe, O_WRONLY, 0600);
+    clients[i].action = UPDATE;
+    write(fd, &clients[i], sizeof(clients[i]));
+    close(fd);
+  }
+}
+
 void add_to_active_users_list(int pid, char username[8]) {
   clients[active_users].pid = pid;
   strcpy(clients[active_users].username, username);
-  clients[active_users].editing_line = -1;
+  // clients[active_users].editing_line = -1;
   clients[active_users].status = false;
   active_users++;
 }
@@ -176,7 +192,7 @@ void *receiver() {
           if (check_if_users_exceeds_max_active() == true) {
             add_to_active_users_list(receive.pid, receive.username);
             send.action = LOGGED; // LOGIN EFECTUADO COM SUCESSO
-            send.editing_line = -1;
+            send.editing_line = 0;
             send.status = false;
             printf("User %s com o PID %d iniciou sessao!\n", receive.username,
                    receive.pid);
@@ -214,6 +230,12 @@ void *receiver() {
         }
       }
       editor.num_chars = receive.num_chars;
+      printf("vai ser agora!!!!!!\n\n");
+
+      for (int i = 0; i < MAX_LINES; i++) {
+        printf("%d\n", i);
+        printf("%s\n", receive.userEdit[i]);
+      }
 
       if (receive.status == false) {
 
@@ -223,22 +245,33 @@ void *receiver() {
             clients[i].status = receive.status;
           }
         }
+
+        printf("vai ser agora a 2 x !!\n\n");
+
         for (int i = 0; i < MAX_LINES; i++) {
-          if (strcmp(receive.userEdit[i], receive.username) == 0) {
-            printf("vai retirar linha!!\n");
-            strcpy(editor.userEdit[i], "        ");
-            strcpy(receive.userEdit[i], "        ");
-          }
+          printf("%d\n", i);
+          printf("%s\n", receive.userEdit[i]);
+        }
+        int aux = 0;
+        while (aux != -1 && aux < MAX_LINES) {
+          if (strcmp(receive.userEdit[aux], receive.username) == 0) {
+            printf("vai retirar linha na linha %d!!\n", aux);
+            strcpy(editor.userEdit[aux], "       ");
+            strcpy(receive.userEdit[aux], "       ");
+            // printf("%s\n", receive.userEdit[aux]);
+            aux = -1;
+          } else
+            aux++;
         }
       }
 
-      for (int i = 0; i < MAX_LINES; i++) {
+      /*for (int i = 0; i < MAX_LINES; i++) {
         printf("%d\n", i);
         printf("%s\n", receive.userEdit[i]);
         printf("%s\n", editor.userEdit[i]);
-      }
+      }*/
       // pthread_mutex_lock(&lock);
-      update_all_users(receive.pid);
+      update_all_users();
       // pthread_mutex_unlock(&lock);
       pthread_mutex_unlock(&lock);
 
@@ -265,12 +298,12 @@ void *receiver() {
 
         write(fd_send, &receive, sizeof(receive));
       } else {
-        receive.editing_line = -1;
+        // receive.editing_line = -1;
         receive.action = PERMISSION_DENIED;
         receive.status = false;
         write(fd_send, &receive, sizeof(receive));
       }
-      update_all_users(receive.pid);
+      update_all_other_users(receive.pid);
       pthread_mutex_unlock(&lock);
 
       break;

@@ -110,7 +110,7 @@ void *receiver() {
       wrefresh(info);
 
       for (int i = 0; i < MAX_LINES; i++) {
-        if (strcmp(receive.userEdit[i], "        ") == 0) {
+        if (strcmp(receive.userEdit[i], "        ") == 0 || strcmp(receive.userEdit[i], "       ") == 0) {
           attroff(COLOR_PAIR(1));
           mvprintw(i + 2, 58, "%s", receive.userEdit[i]);
           refresh();
@@ -247,9 +247,15 @@ int main(int argc, char **argv) {
   }
 
   for (int i = 0; i < MAX_LINES; i++) {
-    attron(COLOR_PAIR(1));
-    mvprintw(i + 2, 58, receive.userEdit[i]);
-    refresh();
+    if (strcmp(receive.userEdit[i], "        ") == 0 || strcmp(receive.userEdit[i], "       ") == 0) {
+      attroff(COLOR_PAIR(1));
+      mvprintw(i + 2, 58, "%s", receive.userEdit[i]);
+      refresh();
+    } else {
+      attron(COLOR_PAIR(1));
+      mvprintw(i + 2, 58, "%s", receive.userEdit[i]);
+      refresh();
+    }
   }
 
   x = 1;
@@ -259,8 +265,8 @@ int main(int argc, char **argv) {
   wrefresh(my_win);
   while ((ch = getch()) != 27) // sai ciclo quando clicar escape
   {
-    /*for (int i = 0; i < MAX_LINES; i++) {
-      if (strcmp(receive.userEdit[i], "        ") == 0) {
+    for (int i = 0; i < MAX_LINES; i++) {
+      if (strcmp(receive.userEdit[i], "        ") == 0 || strcmp(receive.userEdit[i], "       ") == 0) {
         attroff(COLOR_PAIR(1));
         mvprintw(i + 2, 58, "%s", receive.userEdit[i]);
         refresh();
@@ -272,7 +278,7 @@ int main(int argc, char **argv) {
     }
     wmove(my_win, y, x); // Start with cursor in 1 1
     refresh();
-    wrefresh(my_win);*/
+    wrefresh(my_win);
     char s[MAX_COLUMNS];
     for (int i = 0; i < MAX_COLUMNS; i++) {
       s[i] = receive.content[y - 1][i];
@@ -388,14 +394,14 @@ int main(int argc, char **argv) {
       mvprintw(y + 1, 58, "        ");
       refresh();
     }
-
+    //strcpy(receive.userEdit[y - 1], "        ");
     wmove(my_win, y, x);
     mvwprintw(info, 1, 14, "%d", receive.num_chars);
     mvwprintw(info, 3, 12, "%d", receive.n_chars);
     wrefresh(info);
     wrefresh(my_win);
     permiAccepted = 2;
-    receive.editing_line = -1;
+    //receive.editing_line = -1;
     receive.status = false;
     receive.action = UPDATE; // envia o conteúdo actualizado para o servidor
     write(fd, &receive, sizeof(receive));
