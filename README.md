@@ -16,15 +16,8 @@ Text Editor in C (Unix)
 
 
 # Bugs / A melhorar
- - Organização do código.
- - Passar a variável content da estrutura Editor para um array 2D dinâmico.
  - Contador do nº de caracteres do utilizador está bugado.
- - Alternação entre o Modo de Edição/Navegação (graficamente) bugado.
- - [X] Saber graficamente, quem está a editar o quê em tempo real.
  - Implementar a idade da sessão de cada utilizador em tempo real;
- - Implementar mutexes / semáforos.
- - [X] Na função statistcs() implementar código para saber quais as linhas que estão a ser editadas no momento pelos clientes (em tempo real).
- - No servidor, quando chamamos o comando free da linha, nao atualiza de imediato no cliente, e preciso fazer um getchar.
 
 # Funcionalidades implementadas para final do trabalho
  - [X] Implementar no servidor um array de estruturas dos clientes para a comunicação entre o servidor e os clientes;
