@@ -110,7 +110,8 @@ void *receiver() {
       wrefresh(info);
 
       for (int i = 0; i < MAX_LINES; i++) {
-        if (strcmp(receive.userEdit[i], "        ") == 0 || strcmp(receive.userEdit[i], "       ") == 0) {
+        if (strcmp(receive.userEdit[i], "        ") == 0 ||
+            strcmp(receive.userEdit[i], "       ") == 0) {
           attroff(COLOR_PAIR(1));
           mvprintw(i + 2, 58, "%s", receive.userEdit[i]);
           refresh();
@@ -154,7 +155,7 @@ void alarme(int sig) { stop = 1; }
 int main(int argc, char **argv) {
   Editor temp;
   char pipe[20], npipe[20];
-  int opt, fd, res;
+  int opt, fd, res, ch;
   pthread_t task;
 
   signal(SIGINT, SIGhandler);
@@ -208,12 +209,6 @@ int main(int argc, char **argv) {
     write(fd, &temp, sizeof(temp));
     sleep(1);
   }
-
-  int ch;
-  receive.n_chars = 0;
-  // int x = 1;
-  // int y = 1;
-
   initscr();
   start_color();
   init_pair(1, COLOR_WHITE, COLOR_RED);
@@ -234,20 +229,20 @@ int main(int argc, char **argv) {
 
   mvwprintw(info, 1, 1, "Editor chars:");
   mvwprintw(info, 1, 14, "%d", receive.num_chars);
-
-  receive.n_chars = 0;
   mvwprintw(info, 3, 1, "User chars:");
   mvwprintw(info, 3, 12, "%d", receive.n_chars);
 
   mvwprintw(info, 1, 31, "Modo Navegação");
   wrefresh(info);
-  for (y = 1; y <= MAX_LINES; y++) {
+
+  for (y = 1; y <= receive.lines; y++) {
     x = 49;
     mvprintw(y + 1, x, "Linha %2d", y);
   }
 
-  for (int i = 0; i < MAX_LINES; i++) {
-    if (strcmp(receive.userEdit[i], "        ") == 0 || strcmp(receive.userEdit[i], "       ") == 0) {
+  for (int i = 0; i < receive.lines; i++) {
+    if (strcmp(receive.userEdit[i], "        ") == 0 ||
+        strcmp(receive.userEdit[i], "       ") == 0) {
       attroff(COLOR_PAIR(1));
       mvprintw(i + 2, 58, "%s", receive.userEdit[i]);
       refresh();
@@ -265,8 +260,9 @@ int main(int argc, char **argv) {
   wrefresh(my_win);
   while ((ch = getch()) != 27) // sai ciclo quando clicar escape
   {
-    for (int i = 0; i < MAX_LINES; i++) {
-      if (strcmp(receive.userEdit[i], "        ") == 0 || strcmp(receive.userEdit[i], "       ") == 0) {
+    for (int i = 0; i < receive.lines; i++) {
+      if (strcmp(receive.userEdit[i], "        ") == 0 ||
+          strcmp(receive.userEdit[i], "       ") == 0) {
         attroff(COLOR_PAIR(1));
         mvprintw(i + 2, 58, "%s", receive.userEdit[i]);
         refresh();
@@ -279,12 +275,12 @@ int main(int argc, char **argv) {
     wmove(my_win, y, x); // Start with cursor in 1 1
     refresh();
     wrefresh(my_win);
-    char s[MAX_COLUMNS];
-    for (int i = 0; i < MAX_COLUMNS; i++) {
+
+    char s[receive.columns];
+    for (int i = 0; i < receive.columns; i++)
       s[i] = receive.content[y - 1][i];
-    }
     int numUserChar = 0;
-    int lengh = receive.num_chars;
+    int length = receive.num_chars;
 
     switch (ch) {
     case KEY_LEFT:
@@ -313,7 +309,6 @@ int main(int argc, char **argv) {
       numUserChar = receive.n_chars;
       receive.action = ASK_PERMISSION;
       receive.editing_line = y;
-
       write(fd, &receive, sizeof(receive));
 
       while (permiAccepted == 2)
@@ -333,16 +328,15 @@ int main(int argc, char **argv) {
       }
 
       while ((ch = getch()) != 10) {
-        // alarm(0);
+        alarm(0);
 
         if (ch == 27) {
-          // stop = 0;
+          stop = 0;
           recovery_array(my_win, s, receive.content, y, x);
           mvprintw(y + 1, 58, "        ");
           refresh();
-          receive.num_chars = lengh;
+          receive.num_chars = length;
           receive.n_chars = numUserChar;
-
           break;
         }
 
@@ -382,7 +376,7 @@ int main(int argc, char **argv) {
         wrefresh(my_win);
         receive.action = UPDATE;
         write(fd, &receive, sizeof(receive));
-        // alarm(3);
+        alarm(receive.timeout);
       }
     }
     attroff(COLOR_PAIR(1));
@@ -394,14 +388,14 @@ int main(int argc, char **argv) {
       mvprintw(y + 1, 58, "        ");
       refresh();
     }
-    //strcpy(receive.userEdit[y - 1], "        ");
+    // strcpy(receive.userEdit[y - 1], "        ");
     wmove(my_win, y, x);
     mvwprintw(info, 1, 14, "%d", receive.num_chars);
     mvwprintw(info, 3, 12, "%d", receive.n_chars);
     wrefresh(info);
     wrefresh(my_win);
     permiAccepted = 2;
-    //receive.editing_line = -1;
+    // receive.editing_line = -1;
     receive.status = false;
     receive.action = UPDATE; // envia o conteúdo actualizado para o servidor
     write(fd, &receive, sizeof(receive));

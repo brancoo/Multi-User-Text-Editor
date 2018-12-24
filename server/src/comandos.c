@@ -1,5 +1,6 @@
 #include "comandos.h"
 #include "main.h"
+#include "users.h"
 #include <ctype.h>
 #include <fcntl.h>
 #include <stdio.h>
@@ -10,7 +11,7 @@
 #include <sys/unistd.h>
 
 bool verify_file_existence(char *file) {
-  if (access(file, F_OK) == 0) {
+  if (access(file, F_OK) != -1) {
     return true; // SE EXISTIR
   } else {
     return false; // SE NÃO EXISTIR
@@ -56,7 +57,6 @@ void save_settings(char *filename) {
       for (j = 0; j < editor.columns; j++) {
         fprintf(f, "%c", editor.content[i][j]);
       }
-      fprintf(f, "\n");
     }
   }
   fclose(f);
@@ -64,18 +64,29 @@ void save_settings(char *filename) {
 
 void users() {
   char pipe[20];
-  sprintf(pipe, "pipe-%d", editor.pid);
 
   system("clear");
-  printf("Utilizador: %s\n", editor.username);
-  printf("Nome do Pipe: %s\n", pipe);
+  if (active_users > 0) {
+    for (int i = 0; i < active_users; i++) {
+      sprintf(pipe, "pipe-%d", clients[i].pid);
+      printf("Utilizador: %s\n", clients[i].username);
+      printf("Nome do Pipe: %s\n", pipe);
+      if (clients[i].status == true) {
+        printf("A editar a linha %d\n", clients[i].editing_line);
+      }
+    }
+  } else {
+    printf("Nenhum user com sessao iniciada!\n");
+  }
 }
 
 void settings() {
+  char *aux;
+  aux = strtok(PIPE, "../");
   system("clear");
   printf("Numero de Linhas: %d\nNumero de colunas: %d\nNumero Max. de "
          "Utilizadores: %d\nNome do Pipe Principal: %s\n",
-         editor.lines, editor.columns, editor.max_users, PIPE);
+         editor.lines, editor.columns, editor.max_users, aux);
 }
 
 void load_file(char *filename) {
@@ -124,7 +135,16 @@ void count_chars(char *aux) {
 }
 
 void statistics() {
-  char *p = strtok(editor.content[0], " ");
+  // cria-se uma cópia auxiliar da nossa matriz para não se mexer na matriz
+  // original
+  char aux[editor.lines][editor.columns];
+  for (int i = 0; i < editor.lines; i++) {
+    for (int j = 0; j < editor.columns; j++) {
+      aux[i][j] = editor.content[i][j];
+    }
+  }
+
+  char *p = strtok(aux[0], " ");
   int n_words = 0;
 
   while (p) {
@@ -206,7 +226,7 @@ void cmd(char *com) {
 
   if (strcmp(arg[0], "load") == 0) {
     if (arg[1]) {
-      if (verify_file_existence(arg[1]) == 0)
+      if (verify_file_existence(arg[1]) == true)
         load_file(arg[1]);
       else {
         printf("Ficheiro nao encontrado!\n");

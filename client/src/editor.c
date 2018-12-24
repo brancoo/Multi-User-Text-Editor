@@ -72,20 +72,24 @@ void add_char(WINDOW *win, char content[MAX_LINES][MAX_COLUMNS], char c, int x,
   y--;
   i = x; // guardar pos x, da coluna
 
+  if (c != ' ') { // NÃO SE CONTAM OS ESPAÇOS INSERIDOS
+    receive.num_chars++;
+    receive.n_chars++;
+  }
+
+  // verifica se a ultima coluna tem espaco enter ou null
   if (content[y][MAX_COLUMNS - 1] == ' ' ||
-      content[y][MAX_COLUMNS - 1] ==
-          '\0' || // verifica se a ultima coluna tem espaco enter ou null
+      content[y][MAX_COLUMNS - 1] == '\0' ||
       content[y][MAX_COLUMNS - 1] == NULL) {
-    for (x = MAX_COLUMNS - 1; x != i;
-         x--) { // comeca a percorrer o array da ultima coluna ate a pos onde
-                // queremos meter o ch
-      if (content[y][x] == NULL) {
+    for (x = MAX_COLUMNS - 1; x != i; x--) {
+      if (content[y][x] == NULL)
         content[y][x] = ' ';
-      }
+
       if (content[y][x - 1] == NULL) {
         content[y][x] = ' ';
         place_in_editor(win, y, x, content[y][x]);
       }
+
       if (content[y][x - 1] != NULL) {
         content[y][x] = content[y][x - 1]; // arrastar caracteres para a direita
         place_in_editor(win, y, x, content[y][x]);
@@ -93,10 +97,6 @@ void add_char(WINDOW *win, char content[MAX_LINES][MAX_COLUMNS], char c, int x,
     }
     content[y][x] = c; // colocar o caracter que queremos no sitio certo
     place_in_editor(win, y, x, content[y][x]);
-    if (c != ' ') { // NÃO SE CONTAM OS ESPAÇOS INSERIDOS
-      receive.num_chars++;
-      receive.n_chars++;
-    }
   } else
     return;
 }
