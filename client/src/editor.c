@@ -48,8 +48,8 @@ void delete_char(WINDOW *win, char content[MAX_LINES][MAX_COLUMNS], int x,
 
   if (content[y][x] != ' ') {
     receive.num_chars--;
-    if (receive.n_chars > 0) {
-      receive.n_chars--;
+    if (receive.user_chars > 0) {
+      receive.user_chars--;
     }
   }
 
@@ -74,7 +74,7 @@ void add_char(WINDOW *win, char content[MAX_LINES][MAX_COLUMNS], char c, int x,
 
   if (c != ' ') { // NÃO SE CONTAM OS ESPAÇOS INSERIDOS
     receive.num_chars++;
-    receive.n_chars++;
+    receive.user_chars++;
   }
 
   // verifica se a ultima coluna tem espaco enter ou null

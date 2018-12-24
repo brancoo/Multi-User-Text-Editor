@@ -49,7 +49,7 @@ void verify_env_var() {
     getMAX_USERS(editor.lines);
   }
   editor.num_chars = 0;
-  editor.n_chars = 0;
+  editor.user_chars = 0;
   editor.cursor.x = 4;
   editor.cursor.y = 5;
 }
@@ -183,7 +183,7 @@ void SIGhandler(int sig) {
 }
 
 int main(int argc, char *argv[]) {
-  char file[80], comando[80];
+  char comando[80], file[80];
   int opt, fd_pipe, res;
   pthread_t thread;
   // fd_pipe, filehandler para o pipe principal
@@ -198,7 +198,7 @@ int main(int argc, char *argv[]) {
         strcpy(file, argv[2]);
       else {
         printf("Base de dados de usernames: ");
-        scanf("%s", file);
+        scanf(" %79[^\n]s", file);
         if (verify_file_existence(argv[2]) == false)
           strcpy(file, "../out/medit.db");
       }

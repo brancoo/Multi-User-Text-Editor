@@ -4,7 +4,6 @@
 #include <curses.h>
 #include <fcntl.h>
 #include <getopt.h>
-#include <ncurses.h>
 #include <pthread.h>
 #include <signal.h>
 #include <stdio.h>
@@ -19,9 +18,8 @@
 
 int x = 1;
 int y = 1;
-WINDOW *my_win;
-WINDOW *info;
-Editor receive, send;
+WINDOW *my_win, *info;
+Editor receive;
 int logged = 0; // para saber se o user se conseguiu logar com sucesso
 int permiAccepted = 2;
 int stop = 0;
@@ -99,7 +97,6 @@ void *receiver() {
       break;
     case MAX_ACTIVE_USERS:
       printf("Numero maximo de utilizadores activos atingido!\n");
-
       break;
     case USER_ALREADY_LOGGED:
       printf("User ja logado!!\n");
@@ -121,16 +118,8 @@ void *receiver() {
           refresh();
         }
       }
-
-      /*for (int i = 0; i < MAX_LINES; i++) {
-        attron(COLOR_PAIR(1));
-        mvprintw(i + 2, 58, "%s", receive.userEdit[i]);
-        refresh();
-      }*/
-
       wmove(my_win, y, x);
       wrefresh(my_win);
-
       break;
     case PERMISSION_ACCEPTED:
       permiAccepted = 1;
@@ -209,6 +198,7 @@ int main(int argc, char **argv) {
     write(fd, &temp, sizeof(temp));
     sleep(1);
   }
+
   initscr();
   start_color();
   init_pair(1, COLOR_WHITE, COLOR_RED);
@@ -230,7 +220,7 @@ int main(int argc, char **argv) {
   mvwprintw(info, 1, 1, "Editor chars:");
   mvwprintw(info, 1, 14, "%d", receive.num_chars);
   mvwprintw(info, 3, 1, "User chars:");
-  mvwprintw(info, 3, 12, "%d", receive.n_chars);
+  mvwprintw(info, 3, 12, "%d", receive.user_chars);
 
   mvwprintw(info, 1, 31, "Modo Navegação");
   wrefresh(info);
@@ -258,6 +248,7 @@ int main(int argc, char **argv) {
   wmove(my_win, y, x); // Start with cursor in 1 1
   refresh();
   wrefresh(my_win);
+
   while ((ch = getch()) != 27) // sai ciclo quando clicar escape
   {
     for (int i = 0; i < receive.lines; i++) {
@@ -279,6 +270,7 @@ int main(int argc, char **argv) {
     char s[receive.columns];
     for (int i = 0; i < receive.columns; i++)
       s[i] = receive.content[y - 1][i];
+
     int numUserChar = 0;
     int length = receive.num_chars;
 
@@ -306,7 +298,7 @@ int main(int argc, char **argv) {
       }
       break;
     case 10:
-      numUserChar = receive.n_chars;
+      numUserChar = receive.user_chars;
       receive.action = ASK_PERMISSION;
       receive.editing_line = y;
       write(fd, &receive, sizeof(receive));
@@ -329,17 +321,15 @@ int main(int argc, char **argv) {
 
       while ((ch = getch()) != 10) {
         alarm(0);
-
         if (ch == 27) {
           stop = 0;
           recovery_array(my_win, s, receive.content, y, x);
           mvprintw(y + 1, 58, "        ");
           refresh();
           receive.num_chars = length;
-          receive.n_chars = numUserChar;
+          receive.user_chars = numUserChar;
           break;
         }
-
         switch (ch) {
         case KEY_DC:        // delete
         case KEY_BACKSPACE: // backspace
@@ -371,7 +361,7 @@ int main(int argc, char **argv) {
         }
         wmove(my_win, y, x);
         mvwprintw(info, 1, 14, "%d", receive.num_chars);
-        mvwprintw(info, 3, 12, "%d", receive.n_chars);
+        mvwprintw(info, 3, 12, "%d", receive.user_chars);
         wrefresh(info);
         wrefresh(my_win);
         receive.action = UPDATE;
@@ -391,7 +381,7 @@ int main(int argc, char **argv) {
     // strcpy(receive.userEdit[y - 1], "        ");
     wmove(my_win, y, x);
     mvwprintw(info, 1, 14, "%d", receive.num_chars);
-    mvwprintw(info, 3, 12, "%d", receive.n_chars);
+    mvwprintw(info, 3, 12, "%d", receive.user_chars);
     wrefresh(info);
     wrefresh(my_win);
     permiAccepted = 2;

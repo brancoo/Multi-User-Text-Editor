@@ -37,7 +37,7 @@ typedef struct {
   int action;
   bool status;      // modo navegação ou edição
   int editing_line; // para saber qual a linha que está a editar no momento
-  int n_chars;      // numero de caracteres que o user adicionou
+  int user_chars;   // numero de caracteres que o user adicionou
 } Editor;
 
 #endif

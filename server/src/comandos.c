@@ -84,6 +84,7 @@ void settings() {
   char *aux;
   aux = strtok(PIPE, "../");
   system("clear");
+
   printf("Numero de Linhas: %d\nNumero de colunas: %d\nNumero Max. de "
          "Utilizadores: %d\nNome do Pipe Principal: %s\n",
          editor.lines, editor.columns, editor.max_users, aux);
@@ -227,7 +228,7 @@ void cmd(char *com) {
   if (strcmp(arg[0], "load") == 0) {
     if (arg[1]) {
       if (verify_file_existence(arg[1]) == true)
-        load_file(arg[1]);
+        load_file(arg[1]); // load ../out/exemplo.txt  (EXEMPLO!)
       else {
         printf("Ficheiro nao encontrado!\n");
         return;
@@ -258,7 +259,6 @@ void cmd(char *com) {
       free_row(editor.content, atoi(arg[1]));
       editor.action = UPDATE;
       update_all_users();
-      // write(fd, &editor, sizeof(editor));
     } else {
       printf("Faltam argumentos!\n");
       return;
