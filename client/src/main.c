@@ -84,6 +84,7 @@ void *relogio() {
     wrefresh(my_win);
     sleep(1);
   }
+  pthread_exit(0);
   return NULL;
 }
 

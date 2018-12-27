@@ -20,3 +20,4 @@ void *receiver();
 void shutdown();
 void server_shutdown();
 void client_shutdown();
+void *relogio();
