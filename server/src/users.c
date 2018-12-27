@@ -36,9 +36,16 @@ bool check_if_users_exceeds_max_active() {
 }
 
 void add_to_active_users_list(int pid, char username[8]) {
+  time_t rawtime;
+  struct tm *loc_time;
+  rawtime = time(NULL);
+  loc_time = localtime(&rawtime);
+
   clients[active_users].pid = pid;
   strcpy(clients[active_users].username, username);
   clients[active_users].status = false;
+  clients[active_users].user_time.minutos = loc_time->tm_min;
+  clients[active_users].user_time.segundos = loc_time->tm_sec;
   active_users++;
 }
 

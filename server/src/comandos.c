@@ -63,14 +63,25 @@ void save_settings(char *filename) {
 }
 
 void users() {
+  time_t rawtime;
+  struct tm *loc_time;
+  int m, s;
   char pipe[20];
 
   system("clear");
+
   if (active_users > 0) {
     for (int i = 0; i < active_users; i++) {
       sprintf(pipe, "pipe-%d", clients[i].pid);
       printf("Utilizador: %s\n", clients[i].username);
       printf("Nome do Pipe: %s\n", pipe);
+      rawtime = time(NULL);
+      loc_time = localtime(&rawtime);
+      m = loc_time->tm_min;
+      s = loc_time->tm_sec;
+      printf("Idade da Sessao: %dminutos:%dsegundos\n",
+             m - clients[i].user_time.minutos,
+             s - clients[i].user_time.segundos);
       if (clients[i].status == true) {
         printf("A editar a linha %d\n", clients[i].editing_line);
       }

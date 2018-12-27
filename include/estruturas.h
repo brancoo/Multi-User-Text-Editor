@@ -2,6 +2,9 @@
 #define ESTRUTURAS_H
 
 #include <stdbool.h>
+#include <stdio.h>
+#include <time.h>
+
 #define MAX_LINES 15
 #define MAX_COLUMNS 45
 #define MEDIT_TIMEOUT 10
@@ -25,6 +28,10 @@ typedef struct {
 } Cursor;
 
 typedef struct {
+  int minutos, segundos;
+} session;
+
+typedef struct {
   int lines, columns;
   char content[MAX_LINES][MAX_COLUMNS];
   int num_chars; // numero total de caracteres do editor
@@ -32,6 +39,7 @@ typedef struct {
   int max_users;
   Cursor cursor;
   char username[8];
+  session user_time;
   char userEdit[MAX_LINES][8];
   int pid;
   int action;
