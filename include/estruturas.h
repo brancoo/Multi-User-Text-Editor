@@ -29,7 +29,7 @@ typedef struct {
 
 typedef struct {
   int minutos, segundos;
-} session;
+} Session;
 
 typedef struct {
   int lines, columns;
@@ -39,7 +39,7 @@ typedef struct {
   int max_users;
   Cursor cursor;
   char username[8];
-  session user_time;
+  Session user_time; // estrutura auxiliar para a Idade de Sessão
   char userEdit[MAX_LINES][8];
   int pid;
   int action;
