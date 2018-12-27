@@ -70,8 +70,7 @@ void shutdown() {
 
 void *receiver() {
   char pipe[20];
-  int fd_pipe, fd_send;
-  fd_send = open(PIPE, O_WRONLY, 0600);
+  int fd_pipe;
   sprintf(pipe, "../pipe-%d", getpid());
   mkfifo(pipe, 0600);
 
