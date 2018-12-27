@@ -17,7 +17,3 @@ Text Editor in C (Unix)
 
 # Bugs / A melhorar
  - Contador do nº de caracteres do utilizador está bugado.
- - Implementar a idade da sessão de cada utilizador em tempo real;
-
-# Funcionalidades implementadas para final do trabalho
- - [X] Implementar no servidor um array de estruturas dos clientes para a comunicação entre o servidor e os clientes;
