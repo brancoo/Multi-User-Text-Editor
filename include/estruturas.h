@@ -1,6 +1,5 @@
 #ifndef ESTRUTURAS_H
 #define ESTRUTURAS_H
-
 #include <stdbool.h>
 #include <stdio.h>
 #include <time.h>

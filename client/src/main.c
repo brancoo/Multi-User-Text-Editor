@@ -23,6 +23,7 @@ Editor receive;
 int logged = 0; // para saber se o user se conseguiu logar com sucesso
 int permiAccepted = 2;
 int stop = 0;
+bool continua = true; // auxiliar para a thread do relógio
 
 // caso seja o cliente a fechar em 1º lugar (sem estar loggado)
 void client_shutdown() {
@@ -66,6 +67,24 @@ void shutdown() {
   } else {
     client_shutdown();
   }
+}
+
+void *relogio() {
+  time_t hora;
+  struct tm *loc_time;
+  int ax, ay;
+  while (continua == true) {
+    hora = time(NULL);
+    loc_time = localtime(&hora);
+    getyx(stdscr, ay, ax);
+    mvwprintw(info, 3, 25, "Hora Actual: %d:%d:%d", loc_time->tm_hour,
+              loc_time->tm_min, loc_time->tm_sec);
+    move(ay, ax);
+    wrefresh(info);
+    wrefresh(my_win);
+    sleep(1);
+  }
+  return NULL;
 }
 
 void *receiver() {
@@ -135,6 +154,7 @@ void *receiver() {
 
 void SIGhandler(int sig) {
   signal(sig, SIG_IGN);
+  continua = false;
   shutdown();
 }
 
@@ -143,8 +163,8 @@ void alarme(int sig) { stop = 1; }
 int main(int argc, char **argv) {
   Editor temp;
   char pipe[20], npipe[20];
-  int opt, fd, res, ch;
-  pthread_t task;
+  int opt, fd, res, ch, res_relogio;
+  pthread_t task, task_relogio;
 
   signal(SIGINT, SIGhandler);
   signal(SIGHUP, SIGhandler);
@@ -170,6 +190,13 @@ int main(int argc, char **argv) {
   if (res != 0) {
     perror("ERRO!A criar a thread!!!\n");
     unlink(pipe);
+    getch();
+    exit(1);
+  }
+
+  res_relogio = pthread_create(&task_relogio, NULL, &relogio, NULL);
+  if (res_relogio != 0) {
+    perror("ERRO A CRIAR THREAD DO RELOGIO!\n");
     getch();
     exit(1);
   }
@@ -390,8 +417,8 @@ int main(int argc, char **argv) {
     write(fd, &receive, sizeof(receive));
   }
   endwin();
-
   pthread_join(task, NULL);
+  pthread_join(task_relogio, NULL);
   close(fd);
   unlink(pipe);
   return 0;

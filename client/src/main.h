@@ -11,6 +11,7 @@ extern int logged;
 extern int stop;
 extern int x, y;
 extern int permiAccepted;
+extern int continua;
 
 void SIGhandler(int sig);
 void alarme(int sig);
