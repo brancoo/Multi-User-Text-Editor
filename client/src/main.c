@@ -307,7 +307,7 @@ int main(int argc, char **argv) {
 
       if (permiAccepted == 1) {
         mvwprintw(info, 1, 31, "               ");
-        mvwprintw(info, 1, 31, "Modo Edição");
+        mvwprintw(info, 1, 31, "   Modo Edição");
         wrefresh(info);
         attron(COLOR_PAIR(1));
         mvprintw(y + 1, 58, "%s", temp.username);
