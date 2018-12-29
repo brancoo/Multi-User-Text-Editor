@@ -24,11 +24,12 @@ int logged = 0; // para saber se o user se conseguiu logar com sucesso
 int permiAccepted = 2;
 int stop = 0;
 bool continua = true; // auxiliar para a thread do relógio
+char s[MAX_COLUMNS];
 
 // caso seja o cliente a fechar em 1º lugar (sem estar loggado)
 void client_shutdown() {
   char pipe[20];
-  sprintf(pipe, "../pipe-%d", getpid());
+  sprintf(pipe, "../pipecolumn-%d", getpid());
   unlink(pipe);
   printf("\nPrograma terminado!\n");
   exit(0);
@@ -136,6 +137,9 @@ void *receiver() {
           mvprintw(i + 2, 58, "%s", receive.userEdit[i]);
           refresh();
         }
+      }
+      for (int i = 0; i < MAX_COLUMNS; i++) {
+        s[i] = ' ';
       }
       wmove(my_win, y, x);
       wrefresh(my_win);
@@ -294,7 +298,6 @@ int main(int argc, char **argv) {
     refresh();
     wrefresh(my_win);
 
-    char s[receive.columns];
     for (int i = 0; i < receive.columns; i++)
       s[i] = receive.content[y - 1][i];
 
