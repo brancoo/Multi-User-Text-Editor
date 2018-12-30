@@ -1,1 +1,1 @@
-ola mundo asdasd asdsasdasd asdasd asdasdasd asdasdasdasd asdasdasd
+Isto e um ficheiro, para testar o nosso programa ?para a cadeira de Sistemas Operativos!

@@ -352,10 +352,10 @@ int main(int argc, char **argv) {
       } else {
         break;
       }
-
+      alarm(receive.timeout);
       while ((ch = getch()) != 10) {
         alarm(0);
-        if (ch == 27) {
+        if (ch == 27 || stop == 1) {
           stop = 0;
           recovery_array(my_win, s, receive.content, y, x);
           mvprintw(y + 1, 58, "        ");
