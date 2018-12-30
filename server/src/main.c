@@ -52,6 +52,7 @@ void verify_env_var() {
   editor.user_chars = 0;
   editor.cursor.x = 4;
   editor.cursor.y = 5;
+  initialize_editor_content();
 }
 
 void updateAllUsersEditor() {

@@ -73,7 +73,7 @@ void users() {
   if (active_users > 0) {
     for (int i = 0; i < active_users; i++) {
       sprintf(pipe, "pipe-%d", clients[i].pid);
-      printf("Utilizador: %s\n", clients[i].username);
+      printf("\nUtilizador: %s\n", clients[i].username);
       printf("Nome do Pipe: %s\n", pipe);
       rawtime = time(NULL);
       loc_time = localtime(&rawtime);
@@ -149,14 +149,15 @@ void count_chars(char *aux) {
 void statistics() {
   // cria-se uma cópia auxiliar da nossa matriz para não se mexer na matriz
   // original
-  char aux[editor.lines][editor.columns];
+  char *aux = (char *)malloc(editor.lines * editor.columns * sizeof(char));
+  int temp = 0;
   for (int i = 0; i < editor.lines; i++) {
     for (int j = 0; j < editor.columns; j++) {
-      aux[i][j] = editor.content[i][j];
+      *(aux + i * editor.columns + j) = editor.content[i][j];
     }
   }
 
-  char *p = strtok(aux[0], " ");
+  char *p = strtok(aux, " ,.!?-'");
   int n_words = 0;
 
   while (p) {
@@ -173,7 +174,9 @@ void statistics() {
              clients[i].editing_line, clients[i].username);
     }
   }
+
   free(p);
+  free(aux);
 }
 
 void verify_word() {
