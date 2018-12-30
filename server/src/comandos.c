@@ -150,7 +150,6 @@ void statistics() {
   // cria-se uma cópia auxiliar da nossa matriz para não se mexer na matriz
   // original
   char *aux = (char *)malloc(editor.lines * editor.columns * sizeof(char));
-  int temp = 0;
   for (int i = 0; i < editor.lines; i++) {
     for (int j = 0; j < editor.columns; j++) {
       *(aux + i * editor.columns + j) = editor.content[i][j];
