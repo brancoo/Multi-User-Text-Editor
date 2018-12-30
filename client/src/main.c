@@ -80,7 +80,7 @@ void *relogio() {
     hora = time(NULL);
     loc_time = localtime(&hora);
     getyx(stdscr, ay, ax);
-    mvwprintw(info, 3, 25, "Hora Actual: %d:%d:%d", loc_time->tm_hour,
+    mvwprintw(info, 3, 25, "Hora Actual: %d:%d:%2d", loc_time->tm_hour,
               loc_time->tm_min, loc_time->tm_sec);
     move(ay, ax);
     wrefresh(info);
