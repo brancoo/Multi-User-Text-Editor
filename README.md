@@ -15,13 +15,13 @@ In server side you can execute the following commands:
   
   You can edit the number of the maximum clients that can be logged in (enviroment variable MEDIT_MAXUSERS) and the timeout of the editor (environment variable MEDIT_TIMEOUT, if the user takes longer than MEDIT_TIMEOUT seconds the same user is switched to navigation mode and all the changes that he did are discarded).
   
-  #To change the enviroment variables
+# To change the enviroment variables
    Open the terminal;
    Type the following text: 
     export MEDIT_TIMEOUT=<value> or export MEDIT_MAXUSERS=<value>
    The project was supposed, at the beginning, to support this functionality for the number of lines and columns of the editor, but at the middle of it was discarded by the authors;
   
-  #To compile and execute the program
+# To compile and execute the program
    Open the terminal inside the server folder;
    Type make run;
    To delete the executable you can type make clean, that deletes the server executable (it's inside out's folder);
