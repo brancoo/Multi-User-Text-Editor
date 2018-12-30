@@ -10,8 +10,8 @@ Server side commands:
  * shutdown; (exits the server)
  
  In client side you can navegate or edit a line.
-  - [x] In navigation mode you just can move from right to left, or from up to down;
-  - [x] In editing mode you can add or delete something to a certain line (can not be currently beeing edited), and you can move from   right to left
+  * In navigation mode you just can move from right to left, or from up to down;
+  * In editing mode you can add or delete something to a certain line (can not be currently beeing edited), and you can move from   right to left
   
   You can edit the number of the maximum clients that can be logged in (enviroment variable MEDIT_MAXUSERS) and the timeout of the editor (environment variable MEDIT_TIMEOUT, if the user takes longer than MEDIT_TIMEOUT seconds the same user is switched to navigation mode and all the changes that he did are discarded).
   
