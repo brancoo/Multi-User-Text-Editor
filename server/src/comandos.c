@@ -80,8 +80,8 @@ void users() {
       m = loc_time->tm_min;
       s = loc_time->tm_sec;
       printf("Idade da Sessao: %dminutos:%dsegundos\n",
-             m - clients[i].user_time.minutos,
-             s - clients[i].user_time.segundos);
+             abs(m - clients[i].user_time.minutos),
+             abs(s - clients[i].user_time.segundos));
       if (clients[i].status == true) {
         printf("A editar a linha %d\n", clients[i].editing_line);
       }
@@ -156,7 +156,7 @@ void statistics() {
     }
   }
 
-  char *p = strtok(aux, " ,.!?-'");
+  char *p = strtok(aux, " ");
   int n_words = 0;
 
   while (p) {
