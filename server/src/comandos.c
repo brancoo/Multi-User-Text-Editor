@@ -240,9 +240,10 @@ void cmd(char *com) {
 
   if (strcmp(arg[0], "load") == 0) {
     if (arg[1]) {
-      if (verify_file_existence(arg[1]) == true)
+      if (verify_file_existence(arg[1]) == true) {
         load_file(arg[1]); // load ../out/exemplo.txt  (EXEMPLO!)
-      else {
+        update_all_users();
+      } else {
         printf("Ficheiro nao encontrado!\n");
         return;
       }
