@@ -129,10 +129,10 @@ void text() {
   }
 }
 
-void free_row(char content[][MAX_COLUMNS], int line) {
+void free_row(int line) {
   for (int i = 0; i < MAX_COLUMNS; i++)
-    if (content[line][i] != ' ') {
-      content[line][i] = ' ';
+    if (editor.content[line][i] != ' ') {
+      editor.content[line][i] = ' ';
       editor.num_chars--;
     }
 }
@@ -267,9 +267,10 @@ void cmd(char *com) {
     text();
   else if (strcmp(arg[0], "free") == 0) {
     if (arg[1]) {
-      free_row(editor.content, atoi(arg[1]));
+      free_row(atoi(arg[1]));
       editor.action = UPDATE;
       update_all_users();
+      update_Free_Line_User(atoi(arg[1]));
     } else {
       printf("Faltam argumentos!\n");
       return;

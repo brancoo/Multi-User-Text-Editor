@@ -8,3 +8,4 @@ void add_to_active_users_list(int pid, char username[8]);
 void update_all_other_users(int pid);
 void update_all_users();
 void delete_user_from_array(int pid);
+void update_Free_Line_User(int freeLine);

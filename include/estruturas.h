@@ -21,6 +21,7 @@
 #define PERMISSION_ACCEPTED 9
 #define PERMISSION_DENIED 10
 #define USER_ALREADY_LOGGED 11
+#define FREE_LINE 12
 
 typedef struct {
   int x, y;

@@ -138,11 +138,14 @@ void *receiver() {
           refresh();
         }
       }
+
+      wmove(my_win, y, x);
+      wrefresh(my_win);
+      break;
+    case FREE_LINE:
       for (int i = 0; i < MAX_COLUMNS; i++) {
         s[i] = ' ';
       }
-      wmove(my_win, y, x);
-      wrefresh(my_win);
       break;
     case PERMISSION_ACCEPTED:
       permiAccepted = 1;
@@ -298,8 +301,10 @@ int main(int argc, char **argv) {
     refresh();
     wrefresh(my_win);
 
-    for (int i = 0; i < receive.columns; i++)
+    // char s[MAX_COLUMNS];
+    for (int i = 0; i < MAX_COLUMNS; i++) {
       s[i] = receive.content[y - 1][i];
+    }
 
     int numUserChar = 0;
     int length = receive.num_chars;

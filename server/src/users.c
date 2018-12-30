@@ -108,3 +108,18 @@ void update_all_users() {
     close(fd);
   }
 }
+
+void update_Free_Line_User(int freeLine) {
+  freeLine++;
+  int fd;
+  char pipe[20];
+  for (int i = 0; i < active_users; i++) {
+    if (clients[i].editing_line == freeLine && clients[i].status == true) {
+      sprintf(pipe, "../pipe-%d", clients[i].pid);
+      fd = open(pipe, O_WRONLY, 0600);
+      clients[i].action = FREE_LINE;
+      write(fd, &clients[i], sizeof(clients[i]));
+      close(fd);
+    }
+  }
+}
