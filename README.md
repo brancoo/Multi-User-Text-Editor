@@ -34,3 +34,9 @@ In server side you can execute the following commands:
    To delete the executable you can type make clean, that deletes the client executable (it's inside out's folder too);
       
    The program has some bugs, one of them is the user's characters (the number of chars that the user added or deleted, after the program loaded the content of the default .txt file).
+   
+   ## Authors
+
+* **Alexandre Pinho** - https://github.com/ajfp
+* **Daniel Pinto** - https://github.com/danielpinto8zz6
+
