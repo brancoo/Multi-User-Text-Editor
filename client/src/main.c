@@ -37,6 +37,7 @@ void client_shutdown() {
 
 // caso seja o servidor a fechar em 1º lugar
 void server_shutdown() {
+  continua = false;
   char pipe[20];
   sprintf(pipe, "../pipe-%d", getpid());
   unlink(pipe);
@@ -53,6 +54,7 @@ void shutdown() {
   int fd;
   Editor send;
   if (logged == 1) {
+    continua = false;
     send.pid = getpid();
     send.action = CLIENT_SHUTDOWN;
     sprintf(pipe, "../pipe-%d", getpid());
