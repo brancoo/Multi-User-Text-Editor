@@ -110,9 +110,6 @@ void *receiver() {
     case LOGGED: // LOGIN DO CLIENTE COM SUCESSO
       logged = 1;
       read(fd_pipe, &receive, sizeof(receive));
-      for (int i = 0; i < MAX_LINES; i++) {
-        printf("%s\n", receive.userEdit[i]);
-      }
       break;
     case NOT_LOGGED: // USERNAME NAO ENCONTRADO NA BASE DE DADOS
       printf("Username invalido\n");
