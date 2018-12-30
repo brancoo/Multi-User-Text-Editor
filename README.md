@@ -17,7 +17,7 @@ Server side commands:
   
 ## To change the enviroment variables
    * Open the terminal
-   * Type the following text (e.g): ``` export MEDIT_TIMEOUT=<value>```
+   * Type the following (can use MEDIT_MAXUSERS too): ``` export MEDIT_TIMEOUT=<value>```
    The project was supposed, at the beginning, to support this functionality for the number of lines and columns of the editor, but at the middle of it was discarded by the authors;
   
 ## To compile and execute the program
